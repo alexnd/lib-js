@@ -1,353 +1,1365 @@
-if ('object' == typeof module && null !== module) module.exports = function (app) {
-  var lib = {
+var lib = (function ($g) {
 
-    months: ['Янв', 'Фев', 'Мар', 'Апр', 'Мая', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ной', 'Дек'],
+  var self = this;
 
-    inject: function (dest, src) {
-      if ('object' == typeof dest && 'object' == typeof src) for (var p in src) {
-        if (!src.hasOwnProperty(p)) continue;
-        dest[p] = src[p];
+  $g.inject = function (dst, src) {
+    try {
+      if (!('object' == typeof dst && null !== dst)) var dst = {};
+      if ('object' == typeof src && null !== src) for (var p in src) {
+        if ('function' == typeof src.hasOwnProperty && !src.hasOwnProperty(p)) continue;
+        dst[p] = src[p];
       }
-    },
+      if (arguments.length > 2) {
+        for (var i = 2; i < arguments.length; i++) {
+          if ('object' == typeof arguments[i] && null !== arguments[i]) for (var p in arguments[i]) {
+            if ('function' == typeof arguments[i].hasOwnProperty && !arguments[i].hasOwnProperty(p)) continue;
+            dst[p] = arguments[i][p];
+          }
+        }
+      }
+      return dst;
+    } catch (e) {
+      return null;
+    }
+  };
 
-    clone: function (src) {
+  $g.serialize = function(obj, prefix) {
+    var str = [];
+    for (var p in obj) {
+      if (obj.hasOwnProperty(p)) {
+        var k = prefix ? prefix + '[' + p + ']' : p,
+          v = obj[p];
+        str.push(typeof v == 'object' ? serialize(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
+      }
+    }
+    return str.join('&');
+  };
+
+  $g.copy = function(src, isown) {
       var dest = {};
-      for (var p in src) {
-        if (!src.hasOwnProperty(p)) continue;
-        dest[p] = src[p];
+      if('object'==typeof src) for (var p in src) {
+      if (undefined!==isown && isown && undefined!==src['hasOwnProperty'] && !src.hasOwnProperty(p)) continue;
+      dest[p] = src[p];
+    }
+    return dest;
+  };
+
+  /**
+  * c - Child
+  * p - Parent
+   function Parent() {}
+   function Child() {}
+   $g.inherit(Child, Parent);
+   var kid = new Child();
+  **/
+  $g.inherit = (function () {
+      var f = function(){};
+      return function(c, p) {
+          f.prototype = p.prototype;
+          c.prototype = new f();
+          c._super = p.prototype;
+          c.prototype.constructor = c;
       }
-      return dest;
-    },
+  }());
 
-    copy: function (dest, src) {
-      dest = lib.clone(src);
-    },
+  $g.empty = function (v) {
+    try {
+      if (!v) return true;
+      if (v instanceof Array) return ( v.length == 0 );
+      if (v instanceof Object) {
+        for (var i in v) {
+          if (v.hasOwnProperty(i)) return false;
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
 
-    to_str: Object.prototype.toString,
+  $g.to_str = Object.prototype.toString;
 
-    is_str: function (s) {
-      return typeof s === 'string';
-    },
+  $g.is_str = function (s) {
+    return typeof s === 'string';
+  };
 
-    trim_str: function (s) {
-      return s.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g, '').replace(/\s+/g, ' ');
-    },
+  $g.is_arr = function (a) {
+    return $g.to_str.call(a) === '[object Array]';
+  };
 
-    is_arr: function (a) {
-      return lib.to_str.call(a) === '[object Array]';
-    },
+  $g.is_obj = function (v) {
+    return v !== null && typeof v === 'object';
+  };
 
-    is_obj: function (v) {
-      return v !== null && typeof v === 'object';
-    },
+  $g.is_el = function (el) {
+    return ($g.is_obj(el) && undefined !== el['nodeType']);
+  };
 
-    is_num: function (v) {
-      return typeof v === 'number';
-    },
+  $g.is_num = function (v) {
+    return typeof v === 'number';
+  };
 
-    is_fun: function (v) {
-      return typeof v === 'function';
-    },
+  $g.is_fun = function (v) {
+    return typeof v === 'function';
+  };
+  $g.is_func = $g.is_fun;
 
-    is_null: function (v) {
-      return v === null;
-    },
+  $g.is_null = function (v) {
+    return v === null;
+  };
 
-    to_int: function (s) {
-      var n = parseInt(s, 10);
-      return n == null || isNaN(n) ? 0 : n;
-    },
+  $g.to_int = function (s) {
+    var n = parseInt(s, 10);
+    return n == null || isNaN(n) ? 0 : n;
+  };
+  $g.parse_num = $g.to_int;
 
-    arr_intersect: function (a, a2) {
-      try {
-        for (var i = a.length; i--;) {
-          for (var j = a2.length; j--;) {
-            if (a[i] == a2[j]) return true;
+  $g.arr_intersect = function (a, a2) {
+    try {
+      for (var i = a.length; i--;) {
+        for (var j = a2.length; j--;) {
+          if (a[i] == a2[j]) return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      return null
+    }
+  };
+
+  $g.in_arr = function (a) {
+    try {
+      for (var i = a.length; i--;) {
+        for (var j = 0; j < arguments.length; j++) {
+          if (j == 0) continue;
+          if (a[i] == arguments[j]) return i;
+        }
+      }
+      return null;
+    } catch (e) {
+      return null
+    }
+  };
+
+  $g.arr_trim = function (a) {
+    try {
+      for (var i = a.length; i--;) {
+        if (a[i] === undefined) a.splice(i, 1);
+      }
+    } catch (e) {
+    }
+  };
+
+  // Return real var type string representation
+  $g.toType = function (ob) {
+    return ({}).toString.call(ob).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+  };
+
+  // converts float number to string with given precision
+  $g.toFixed = function (value, precision) {
+    var power = Math.pow(10, precision || 0);
+    return String(Math.round(value * power) / power);
+  };
+
+  $g.toSource = function (obj, name) {
+    try {
+      var c = obj.constructor.toString();
+      var tmpArr = [];
+      var tmpName = ( name ) ? '"' + name + '"' + ':' : "";
+      if (c.match(/Object/g)) {
+        var tmpOArr = [];
+        for (var i in obj) {
+          tmpOArr.push($g.toSource(obj[i], i));
+        }
+        tmpArr.push(tmpName + "{" + tmpOArr.join() + "}");
+      }
+      if (c.match(/Array/g)) {
+        var tmpAArr = [];
+        for (var i = 0, l = obj.length; i < l; i++) {
+          tmpAArr.push($g.toSource(obj[i]));
+        }
+        tmpArr.push(tmpName + "[" + tmpAArr.join() + "]");
+      }
+      else if (c.match(/String/g)) {
+        var tmpStr = obj.replace(/(\\)/g, '\\');
+        tmpStr = tmpStr.replace(/(")/g, '\\"');
+        tmpArr.push(tmpName + '"' + tmpStr + '"');
+      }
+      else if (c.match(/Number/g)) {
+        tmpArr.push(tmpName + obj);
+      }
+      return tmpArr.join();
+
+    } catch (e) {
+    }
+  };
+
+  // converts numeric degrees to radians
+  $g.toRad = function (a) {
+    if (!isNaN(a)) {
+      return parseFloat(a) * Math.PI / 180;
+    }
+    return 0;
+  };
+
+  $g.strbool = function (s) {
+    return (('string' == typeof s && /^true$/i.test(s)) ? true : false);
+  };
+
+  $g.trim_str = function (s) {
+    return s.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g, '').replace(/\s+/g, ' ');
+  };
+
+  // Returns a random number between min and max
+  $g.rnd_a = function (min, max) {
+    return Math.random() * (max - min) + min;
+  };
+
+  // Returns a random integer between min and max
+  // Using Math.round() will give you a non-uniform distribution!
+  $g.rnd_i = function (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  $g.err = function (s) {
+    console.log('Error:', s);
+  };
+
+  $g.ts = function () {
+    return Date.now();
+  };
+
+  $g.tsof = function (x) {
+    return $g.ts() + x;
+  };
+
+  $g.id = function (s) {
+    return document.getElementById(s);
+  };
+
+  //var cnv = $g.el('CANVAS', {width:100,height:100,style:'background:#000'});
+  $g.el = function (tag) {
+    var el = document.createElement(tag);
+    if (tag.toUpperCase() === 'CANVAS' && 'undefined' != typeof window.G_vmlCanvasManager) {
+      G_vmlCanvasManager.initElement(el);
+    }
+    if (arguments.length > 1 && 'object' == typeof arguments[1]) {
+      for (var i in arguments[1]) {
+        if ('object' == typeof arguments[1][i]) {
+          for (var j in arguments[1][i]) {
+            el[i][j] = arguments[1][i][j];
+          }
+        } else {
+          el.setAttribute(i, arguments[1][i]);
+        }
+      }
+    }
+    if (arguments.length > 2 && null !== arguments[2]) {
+      if (tag.match(/^INPUT|TEXTAREA$/i))
+        el.value = arguments[2];
+      else
+        el.innerHTML = arguments[2];
+    }
+    if (arguments.length > 3) {// && 'object' == typeof arguments[3]
+      $g.inject(el.style, arguments[3]);
+    }
+    return el;
+  };
+
+  $g.qs = function (s) {
+    if (arguments.length > 1)
+      return s.querySelector(arguments[1]);
+    else
+      return document.querySelector(s);
+  };
+
+  $g.qsa = function (s) {
+    if (arguments.length > 1)
+      return s.querySelectorAll(arguments[1]);
+    else
+      return document.querySelectorAll(s);
+  };
+
+  $g.add = function (p, el) {
+    p.appendChild(el);
+  };
+
+  $g.addBefore = function (p, el) {
+    return p.insertBefore(el, p.firstChild);
+  };
+
+  // adds DOM node to the end after referenced one
+  $g.addAfter = function (parent, node, referenceNode) {
+    parent.insertBefore(node, referenceNode.nextSibling);
+  };
+
+  $g.rm = function (el) {
+    el.parentNode.removeChild(el);
+  };
+
+  $g.isChildOf = function (child, parent) {
+    var node = child.parentNode;
+    while (node != null) {
+      if (node == parent) {
+        return true;
+      }
+      node = node.parentNode;
+    }
+    return false;
+  };
+
+  $g.cn = function (el, t) {
+    return el.getElementsByTagName(t).item(0);
+  };
+
+  $g.cns = function (el, t) {
+    return el.getElementsByTagName(t);
+  };
+
+  $g.ptn = function (node, nodeName) {
+    try {
+      var node = (($g.is_str(node)) ? $g.id(node) : node);
+      while (node.parentNode && node.parentNode.nodeName != nodeName) {
+        node = node.parentNode;
+      }
+      if (!node.parentNode) return;
+      return node.parentNode;
+    } catch (e) {
+      return;
+    }
+  };
+
+  $g.pcn = function (node, className) {
+    try {
+      var node = (($g.is_str(node)) ? $g.id(node) : node);
+      while (node.parentNode && !$g.match_class(node.parentNode, className)) {
+        node = node.parentNode;
+      }
+      if (!node.parentNode) return;
+      return node.parentNode;
+    } catch (e) {
+      return;
+    }
+  };
+
+  $g.match_class = function (node, className) {
+    try {
+      var node = ($g.is_str(node)) ? $g.id(node) : node;
+      var classArr = node.className.split(/\s+/i);
+      for (var i = classArr.length; i-- > 0;) {
+        if (classArr[i] == className) return true;
+      }
+      return false;
+    } catch (e) {
+      return;
+    }
+  };
+
+  $g.set_class = function (node, className, state) {
+    try {
+      var node = ($g.is_str(node)) ? $g.id(node) : node;
+      var classArr = node.className.split(/\s+/i);
+      for (var i = classArr.length; i-- > 0;) {
+        if (classArr[i] == className) {
+          if (state) return;
+          if (!state) {
+            classArr.splice(i, 1);
+            node.className = classArr.join(' ');
+            return;
           }
         }
-        ;
+      }
+      if (state) {
+        classArr.push(className);
+        node.className = classArr.join(' ');
+      }
+    } catch (e) {
+    }
+  };
+
+  $g.set_classes = function (node, classNamesStates) {
+    try {
+      if ($.is_str(node)) node = $.id(node);
+      if ($.is_el(node)) {
+        var classArr = node.className.split(/\s+/i), i, j, s;
+        for (j in classNamesStates) {
+          s = 0;
+          for (i = 0; i < classArr.length; i++) {
+            //console.log('classArr['+i+']='+classArr[i], j+'='+classNamesStates[j]);
+            if (!classNamesStates[j]) {
+              s = 1;
+              if (classArr[i] == j) {
+                //console.log('deleting class', j);
+                classArr.splice(i, 1);
+              }
+              break;
+            }
+            else if (classArr[i] == j) s = 1;
+          }
+          if (!s && classNamesStates[j]) classArr.push(j);
+        }
+        node.className = classArr.join(' ');
+      }
+    } catch (e) {
+    }
+  };
+
+  $g.get_css_selector = function (className) {
+    var r, classes = document.styleSheets[0].rules || document.styleSheets[0].cssRules;
+    for (var x = 0; x < classes.length; x++) {
+      if (classes[x].selectorText == className) {
+        r = (classes[x].cssText) ? classes[x].cssText : classes[x].style.cssText;
+      }
+    }
+    return r;
+  };
+
+  $g.txt = function (el) {
+    return el.innerText || el.textContent || '';
+  };
+
+  $g.first_el = function (node) {
+    try {
+      for (var i = 0, l = node.childNodes.length; i < l; i++) {
+        if (node.childNodes[i].nodeType == $g.NODE_ELEMENT) return node.childNodes[i];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  $g.next_by_tag = function (node, nodeName) {
+    try {
+      while (node.nextSibling) {
+        if (node.nextSibling.nodeName == nodeName) return node.nextSibling;
+        node = node.nextSibling;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  $g.prev_by_tag = function (node, nodeName) {
+    try {
+      while (node.previousSibling) {
+        if (node.previousSibling.nodeName == nodeName) return node.previousSibling;
+        node = node.previousSibling;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  $g.has_atr = function (el, n) {
+    return ( el.hasAttribute(n) );
+  };
+
+  $g.body = function () {
+    return document.getElementsByTagName('body')[0];
+  };
+
+  $g.d2c = function (el) {
+    return ($g.is_el(el) ? el.getContext('2d') : null);
+  };
+
+  /*
+   params:
+   elementNode - dom node
+   eventName - string event name
+   callback - function
+   useCapture - bool (true - capturing, false - bubbling)
+   example:
+   $g.event( , 'click', function(e){
+   if (!e) var e = window.event;
+   $g.prevent(e);
+   //do work...
+   return false;
+   });
+   */
+  $g.event = function (el, ev, cb, cap) {
+    if (!el) return;
+    if (el.addEventListener) {
+      el.addEventListener(ev, cb, ((undefined === cap) ? false : cap));
+    }
+    //FIXME?
+    else if (el.attachEvent) {
+      //el.attachEvent('on' + ev, cb);
+      el.attachEvent('on' + ev, function () {
+        cb.call(event.srcElement, event);
+      });
+    }
+    else {
+      el['on' + ev] = cb
+    }
+  };
+
+  $g.unevent = function (el, ev, cb, cap) {
+    if (el && el.removeEventListener) {
+      try {// FF issue
+        el.removeEventListener(ev, cb, ((undefined === cap) ? false : cap));
+      } catch (_) {
+      }
+    } else if (el && el.detachEvent) {
+      el.detachEvent('on' + ev, cb);
+    } else if (el) {
+      if (undefined !== el['on' + ev]) {
+        //delete el['on' + ev];
+        el['on' + ev] = null;
+      }
+    }
+  };
+
+  $g.prevent = function (ev) {
+    if (!ev) return;
+    ev.cancelBubble = true;
+    ev.returnValue = false;
+    if (ev.stopPropagation) ev.stopPropagation();
+    if (ev.preventDefault) ev.preventDefault();
+  };
+
+  $g.eventTarget = function (e) {
+    var trg;
+    if (e.target) trg = e.target;
+    else if (e.toElement) trg = e.toElement;
+    else if (e.currentTarget) trg = e.currentTarget;
+    else if (e.srcElement) trg = e.srcElement;
+    else trg = e;
+    return trg;
+  };
+
+  $g.eventSource = function (e) {
+    var trg;
+    if (e.currentTarget) trg = e.currentTarget;
+    else if (e.srcElement) trg = e.srcElement;
+    else if (e.target) trg = e.target;
+    else if (e.toElement) trg = e.toElement;
+    else trg = e;
+    return trg;
+  };
+
+  $g.mousepos = function (e) {
+    if (e.pageX || e.pageY) {
+      return {x: e.pageX, y: e.pageY};
+    }
+    return {
+      x: e.clientX + document.body.scrollLeft - document.body.clientLeft,
+      y: e.clientY + document.body.scrollTop - document.body.clientTop
+    }
+  };
+
+  $g.cookie = {
+    create: function (name, value, days) {
+      if (typeof days !== 'number' || typeof name !== 'string' || typeof value !== 'string') {
         return false;
-      } catch (e) {
-        return null
       }
-      ;
+      var date = new Date();
+      date.setTime(date.getTime() + (days * 86400000));
+      document.cookie = name + '=' + value + '; expires=' + date.toGMTString() + '; path=/';
     },
+    read: function (name) {
+      var cookie = document.cookie,
+        i, val = false;
+      cookie = cookie.split(';');
+      for (i = 0; i < cookie.length; i++) {
+        if (cookie[i].indexOf(name) !== -1) {
+          while (cookie[i].indexOf(name) > 0 && cookie[i].length > name.length) {
+            cookie[i] = cookie[i].substr(1);
+          }
+          val = cookie[i].substr(name.length + 1);
+        }
+      }
+      return val;
+    },
+    erase: function (name) {
+      this.create(name, '', -1);
+    }
+  };
 
-    in_arr: function (a) {
+  $g.xhr = function () {
+    var ref = null;
+    if (window.XMLHttpRequest) {
+      ref = new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
       try {
-        for (var i = a.length; i--;) {
-          for (var j = 0; j < arguments.length; j++) {
-            if (j == 0) continue;
-            if (a[i] == arguments[j]) return i;
+        ref = new ActiveXObject('Msxml2.XMLHTTP.6.0');
+      } catch (e) {
+      }
+      try {
+        ref = new ActiveXObject('Msxml2.XMLHTTP.3.0');
+      } catch (e) {
+      }
+      try {
+        ref = new ActiveXObject('Microsoft.XMLHTTP');
+      } catch (e) {
+      }
+      //throw new Error('This browser does not support XMLHttpRequest.');
+    }
+    return ref;
+  };
+
+  $g.sendfile = function (url, file, varname, filename, extravars, load_img_back, cb, formEl) {
+    var xhr = $g.xhr();
+    if (undefined !== formEl) {
+      var fd = new FormData(formEl);
+    } else {
+      var fd = new FormData();
+    }
+    xhr.open('POST', url, true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+        if (xhr.responseText != '') {
+          if (undefined !== load_img_back && load_img_back) {
+            var img = new Image();
+            if ('function' == typeof cb) {
+              img.onload = function () {
+                cb.call(this, img);
+              }
+            }
+            img.src = xhr.responseText;
+          } else {
+            if ('function' == typeof cb) {
+              cb.call(this, xhr.responseText, xhr);
+            }
           }
         }
-        ;
-        return null;
-      } catch (e) {
-        return null
       }
-      ;
-    },
-
-    arr_trim: function (a) {
-      try {
-        for (var i = a.length; i--;) {
-          if (a[i] === undefined) a.splice(i, 1);
-        }
-        ;
-      } catch (e) {
+    };
+    if (undefined !== filename) {
+      fd.append(varname, file, filename);
+    } else {
+      fd.append(varname, file);
+    }
+    if ('object' == typeof extravars) {
+      for (var i in extravars) {
+        fd.append(i, extravars[i]);
       }
-      ;
-    },
+    }
+    xhr.send(fd);
+  };
 
-    // converts numeric degrees to radians
-    to_rad: function (a) {
-      if (!isNaN(a)) {
-        return parseFloat(a) * Math.PI / 180;
+  $g.set_xhr_post = function (xhr) {
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    if (arguments.length > 1) xhr.setRequestHeader('Content-length', arguments[1].length);
+    xhr.setRequestHeader('Connection', 'close');
+  };
+
+  $g.set_headers = function (xhr, hdrs) {
+    for(var x in hdrs) {
+      xhr.setRequestHeader(x, hdrs[x]);
+    }
+  };
+
+  // local storage
+
+  $g.save_ls = function (k, v) {
+    if (undefined !== k && undefined !== v) {
+      if ('object' == typeof v) localStorage.setItem(k, JSON.stringify(v));
+      else localStorage.setItem(k, v);
+    }
+  };
+
+  $g.unset_ls = function (k) {
+    localStorage.setItem(k, null);
+  };
+
+  $g.load_ls = function (k) {
+    return localStorage.getItem(k);
+  };
+
+  $g.load_bool_ls = function (k) {
+    var s = $g.load_ls(k);
+    return $g.strbool(s);
+  };
+
+  $g.load_int_ls = function (k) {
+    var s = $g.load_ls(k);
+    return ((s !== null && !isNaN(s)) ? $g.to_int(s) : 0);
+  };
+
+  $g.load_float_ls = function (k) {
+    var s = $g.load_ls(k);
+    return ((s !== null && !isNaN(s)) ? parseFloat(s) : 0.0);
+  };
+
+  $g.load_obj_ls = function (k) {
+    var s = $g.load_ls(k);
+    return ((s !== null && s.indexOf('{') == 0) ? JSON.parse(s) : {});
+  };
+
+  $g.load_arr_ls = function (k) {
+    var s = $g.load_ls(k);
+    return ((s !== null && s.indexOf('[') == 0) ? JSON.parse(s) : []);
+  };
+
+  $g.is_ls = function (k) {
+    return (undefined !== k && null !== localStorage.getItem(k));
+  };
+
+  $g.json_decode = function(v) {
+    try {
+      if ('string' == typeof v && (v.indexOf('{') == 0 || v.indexOf('[') == 0)) return JSON.parse(v);
+      else {
+        var ob = new Object();
+        return ob;
       }
-      return 0;
-    },
+    } catch (e) {
+      var ob = new Object();
+      return ob;
+    }
+  };
 
-    // Return real var type string representation
-    to_type: function (obj) {
-      return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
-    },
+  // format date
+  $g.dtformat = function (t) {
+    if ('undefined' == typeof t) var t = $g.ts();
+    var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + '.' + $g.months[d.getMonth()] + '.' + d.getFullYear() + '/' +
+      ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' + ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes())
+      + ':' + ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
+    return s;
+  };
 
-    to_bool: function (v) {
-      return ( (v) ? true : false );
-    },
+  // convert string DD.MM.YYYY date to unix timestamp (seconds since 1970)
+  $g.dt_to_ts = function (s) {
+    var p = s.match(/^(\d+)\.(\d+)\.(\d+)$/), d = new Date();
+    if (p) {
+      d.setFullYear(p[3]);
+      d.setMonth(p[2]);
+      d.setDate(p[1]);
+      d.setHours(0);
+      d.setMinutes(0);
+      d.setSeconds(0);
+      d.setMilliseconds(0);
+      return d.getTime();
+    }
+    return 0;
+  };
 
-    to_fixed: function (value, precision) {
-      var power = Math.pow(10, precision || 0);
-      return String(Math.round(value * power) / power);
-    },
-
-    // Returns a random integer between min and max
-    // Using Math.round() will give you a non-uniform distribution!
-    rnd_i: function (min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    },
-
-    // Returns a random number between min and max
-    rnd_a: function (min, max) {
-      return Math.random() * (max - min) + min;
-    },
-
-    rnd_date: function (y, m, d) {
-      var start = new Date(y, m - 1, d),
-        end = new Date();
-      return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-    },
-
-    uid: function () {
-      var s = function () {
-        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-      };
-      return (s() + s() + '-' + s() + '-' + s() + '-' + s() + '-' + s() + s() + s());
-    },
-
-    // calculate distance between 2 points
-    dist: function (x1, y1, x2, y2) {
-      if (!isNaN(x1) || !isNaN(x2) || !isNaN(y1) || !isNaN(y2)) return 0;
-      return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-    },
-
-    uniqid: function (prefix, more_entropy) {
-      //  discuss at: http://phpjs.org/functions/uniqid/
-      // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-      //  revised by: Kankrelune (http://www.webfaktory.info/)
-      //        note: Uses an internal counter (in php_js global) to avoid collision
-      //        test: skip
-      //   example 1: uniqid();
-      //   returns 1: 'a30285b160c14'
-      //   example 2: uniqid('foo');
-      //   returns 2: 'fooa30285b1cd361'
-      //   example 3: uniqid('bar', true);
-      //   returns 3: 'bara20285b23dfd1.31879087'
-
-      if (typeof prefix === 'undefined') {
-        prefix = '';
-      }
-
-      var retId;
-      var formatSeed = function (seed, reqWidth) {
-        seed = parseInt(seed, 10)
-          .toString(16); // to hex str
-        if (reqWidth < seed.length) { // so long we split
-          return seed.slice(seed.length - reqWidth);
-        }
-        if (reqWidth > seed.length) { // so short we pad
-          return Array(1 + (reqWidth - seed.length))
-              .join('0') + seed;
-        }
-        return seed;
-      };
-
-      // BEGIN REDUNDANT
-      if (!lib.php_js) {
-        lib.php_js = {};
-      }
-      // END REDUNDANT
-      if (!lib.php_js.uniqidSeed) { // init seed with big random int
-        lib.php_js.uniqidSeed = Math.floor(Math.random() * 0x75bcd15);
-      }
-      lib.php_js.uniqidSeed++;
-
-      retId = prefix; // start with prefix, add current milliseconds hex string
-      retId += formatSeed(parseInt(new Date()
-          .getTime() / 1000, 10), 8);
-      retId += formatSeed(lib.php_js.uniqidSeed, 5); // add seed hex string
-      if (more_entropy) {
-        // for more entropy we add a float lower to 10
-        retId += (Math.random() * 10)
-          .toFixed(8)
-          .toString();
-      }
-
-      return retId;
-    },
-
-    // return y position of point on line x1;y1, x2;y2 (x between x1 and x2)
-    allign_terrain_y: function (x1, y1, x2, y2, x) {
-      if (y1 == y2 || x1 == x2) {
-        var y = y1;
+  // convert string YYYY-MM-DD hh:mm:ss date to unix timestamp (seconds since 1970)
+  $g.sqldate_to_ts = function (s) {
+    var p = s.match(/^(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$/), d = new Date();
+    if (p) {
+      d.setFullYear(p[1]);
+      d.setMonth(p[2]);
+      d.setDate(p[3]);
+      if (p.length > 6) {
+        d.setHours(p[4]);
+        d.setMinutes(p[5]);
+        d.setSeconds(p[6]);
       } else {
-        var y = y1 + ( (y2 - y1) / (x2 - x1) ) * (x - x1);
-      }
-      return y;
-    },
-
-    // return terrain unit position pased on real X or Y
-    terrain_unit_coord: function (x) {
-      if (!isNaN(x) && x > 0) return Math.ceil(x / 20);
-      return 0;
-    },
-
-    // return real position base on terrain unit X or Y
-    terrain_real_coord: function (x) {
-      if (!isNaN(x)) return x * 20;
-      return 0;
-    },
-
-    //return current timestamp
-    ts: function () {
-      return Date.now();
-    },
-
-    dtformat0: function (t) {
-      if (undefined === t) var t = Date.now();
-      var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + '.' + (d.getMonth() + 1) + '.' + d.getFullYear() + '/' +
-        ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' + ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes())
-        + ':' + ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
-      return s;
-    },
-
-    //TODO: implement format (example 'Y-M-D h:i' - each symbol interprets as one of values or separator)
-    dtformat: function (t, hmonth, format) {
-      if (undefined === t) var t = Date.now();
-      if (undefined === hmonth) var hmonth = false;
-      var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + '.' +
-        ((hmonth) ?
-          lib.months[d.getMonth()] :
-          ((d.getMonth() + 1 < 10) ? ('0' + (d.getMonth() + 1)) : (d.getMonth() + 1))) + '.' +
-        d.getFullYear() + '/' +
-        ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' +
-        ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes()) + ':' +
-        ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
-      return s;
-    },
-
-    // convert date string 'DD.MM.YYYY' to unix timestamp (seconds since 1970)
-    dt_to_ts: function (s) {
-      var p = s.match(/^(\d+)\.(\d+)\.(\d+)$/), d = new Date();
-      if (p) {
-        d.setFullYear(p[3]);
-        d.setMonth(p[2]);
-        d.setDate(p[1]);
         d.setHours(0);
         d.setMinutes(0);
         d.setSeconds(0);
-        d.setMilliseconds(0);
-        return d.getTime();
       }
-      return 0;
-    },
-
-    // convert date string 'YYYY-MM-DD hh:mm:ss' to unix timestamp (seconds since 1970)
-    sqldate_to_ts: function (s) {
-      var p = s.match(/^(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$/), d = new Date();
-      if (p) {
-        d.setFullYear(p[1]);
-        d.setMonth(p[2]);
-        d.setDate(p[3]);
-        if (p.length > 6) {
-          d.setHours(p[4]);
-          d.setMinutes(p[5]);
-          d.setSeconds(p[6]);
-        } else {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-        }
-        d.setMilliseconds(0);
-        return d.getTime();
-      }
-      return 0;
-    },
-
-    parseCookies: function (request) {
-      var list = {},
-        rc = request.headers.cookie;
-
-      rc && rc.split(';').forEach(function (cookie) {
-        var parts = cookie.split('=');
-        list[parts.shift().trim()] = unescape(parts.join('='));
-      });
-
-      return list;
-    },
-
-    json_decode: function (v) {
-      if ('string' == typeof v && (v.indexOf('{') == 0 || v.indexOf('[') == 0)) return JSON.parse(v);
-      else return {};
-    },
-
-    get_path_ext: function (v) {
-      p = v.match(/\.([^\.]+)$/);
-      if (p) return p[1];
-      return '';
-    },
-
-    get_path_dir: function (v, s) {
-      if (undefined === s) var s = '/';
-      return v.substring(0, v.lastIndexOf(s));
-    },
-
-    get_path_filename: function (v, s) {
-      if (undefined === s) var s = '/';
-      return v.substring(v.lastIndexOf(s) + 1);
-    },
-
-    get_basename: function (v) {
-      return v.substring(0, v.lastIndexOf('.'));
-    },
-
-    html_doc: function (body, head) {
-      if (undefined === body) var body = '';
-      if (undefined === head) var head = '';
-      var doc = '<!DOCTYPE html>' +
-        '<html>' +
-        '<head>' +
-        '<meta charset="utf-8"/>' +
-        head +
-        '</head>' +
-        '<body style="margin-left: 25px">' +
-        body +
-        '</body>' +
-        '</html>';
-      return doc;
-    },
-
+      d.setMilliseconds(0);
+      return d.getTime();
+    }
+    return 0;
   };
-  return lib;
-};
+
+  $g.sqldate = function (dt) {
+    var s = '';
+    if ('undefined'==typeof dt) var dt = new Date();
+    else if (!(dt instanceof Date)) dt = new Date(dt);
+    s += dt.getFullYear();
+    s += '-' + ((dt.getMonth() < 9) ? ('0' + (dt.getMonth()+1)) : (dt.getMonth()+1));
+    s += '-' + ((dt.getDate() < 10) ? ('0' + dt.getDate()) : dt.getDate());
+    if (arguments.length>1 && arguments[1]) {
+      s += ' ' + ((dt.getHours() < 10) ? ('0' + dt.getHours()) : dt.getHours());
+      s += ':' + ((dt.getMinutes() < 10) ? ('0' + dt.getMinutes()) : dt.getMinutes());
+      s += ':' + ((dt.getSeconds() < 10) ? ('0' + dt.getSeconds()) : dt.getSeconds());
+    }
+    return s;
+  };
+
+  $g.sqltime = function (dt) {
+    var s = '';
+    if ('undefined'==typeof dt) var dt = new Date();
+    else if (!(dt instanceof Date)) dt = new Date(dt);
+    s += ((dt.getHours() < 10) ? ('0' + dt.getHours()) : dt.getHours());
+    s += ':' + ((dt.getMinutes() < 10) ? ('0' + dt.getMinutes()) : dt.getMinutes());
+    s += ':' + ((dt.getSeconds() < 10) ? ('0' + dt.getSeconds()) : dt.getSeconds());
+    return s;
+  };
+
+  // calculate distance between 2 points
+  $g.dist = function (x1, y1, x2, y2) {
+    if (!isNaN(x1) || !isNaN(x2) || !isNaN(y1) || !isNaN(y2)) return 0;
+    return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  };
+
+  $g.uid = function () {
+    var s = function () {
+      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    };
+    return (s() + s() + '-' + s() + '-' + s() + '-' + s() + '-' + s() + s() + s());
+  };
+
+  $g.is_email = function(v) {
+    if (undefined === v) return false;
+    if (!$g.is_str(v)) return false;
+    var r = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+    return r.test(v);
+  };
+
+  //replace http://-like substrings with <a href>'s
+  $g.urlify = function (s, blank) {
+    return s.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig,
+      '<a href="$1"' + ((undefined !== blank) ? ' target="blank"' : '') + '>$1</a>');
+  };
+
+  // return Dom element width in pixels
+  $g.w = function (el) {
+    if (!el) return 0;
+    if (typeof(el.clip) != 'undefined') {
+      return el.clip.width;
+    } else {
+      if (el.style.pixelWidth) {
+        return el.style.pixelWidth;
+      } else {
+        return el.offsetWidth;
+      }
+    }
+  };
+
+  // return Dom element height in pixels
+  $g.h = function (el) {
+    if (!el) return 0;
+    if (typeof(el.clip) != 'undefined') {
+      return el.clip.height;
+    } else {
+      if (el.style.pixelHeight) {
+        return el.style.pixelHeight;
+      } else {
+        return el.offsetHeight;
+      }
+    }
+  };
+
+  // return Dom element positions {x,y} in pixels
+  $g.xy = function (el) {
+    var x = 0, y = 0;
+    /*while(el && el.tagName != 'BODY') {
+     y += el.offsetTop;
+     x += el.offsetLeft;
+     el = el.offsetParent;
+     }*/
+    if (el && 'undefined' != typeof el.getBoundingClientRect) {
+      var r = el.getBoundingClientRect(),
+        scrollTop = document.documentElement.scrollTop ?
+          document.documentElement.scrollTop : document.body.scrollTop,
+        scrollLeft = document.documentElement.scrollLeft ?
+          document.documentElement.scrollLeft : document.body.scrollLeft;
+      if (arguments.length > 1 && arguments[1]) {
+        x = Math.round(r.left + scrollLeft);
+        y = Math.round(r.top + scrollTop);
+      } else {
+        x = r.left + scrollLeft;
+        y = r.top + scrollTop;
+      }
+    }
+    return {'x': x, 'y': y};
+  };
+
+  $g.pos = function (el) {
+    var p = {'x': 0, 'y': 0};
+    while (el) {
+      p.x += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+      p.y += (el.offsetTop - el.scrollTop + el.clientTop);
+      el = el.offsetParent;
+    }
+    return p;
+  };
+
+  $g.scrollPos = function () {
+    return ((document.documentElement.scrollTop + document.body.scrollTop) / (document.documentElement.scrollHeight - document.documentElement.clientHeight) * 100);
+  };
+
+// injects view into DOM placeholder
+//example: var view = $g.inflate_view( [ {tag:'CANVAS', atr:{width:100,height:100,style:'background:#000'}} ] );
+  $g.inflate_view = function (el, vi, op) {
+    var i, j, v, isT, isV, r = [];
+    //TODO: work in fr = document.createDocumentFragment() than insert it into el
+    if (undefined !== vi && $g.is_obj(vi)) {
+      if (!$g.is_arr(vi)) vi = [vi];
+      if (undefined !== op && $g.is_obj(op) && undefined !== op['clean'] && op.clean && undefined !== el) {
+        if ($g.is_el(el)) el.innerHTML = '';
+      }
+      if (!$g.is_el(el)) el = document.createDocumentFragment();
+      for (i in vi) {
+        v = null;
+        isT = false;
+        isV = false;
+        if (undefined !== vi[i]['el'] && $g.is_el(vi[i].el)) {
+          if (undefined !== op && undefined !== op.dir && op.dir === 'before') {
+            el.parentNode.insertBefore(vi[i].el, el);
+          } else if (undefined !== op && undefined !== op.dir && op.dir === 'after') {
+            el.parentNode.insertBefore(vi[i].el, el.nextSibling);
+          } else {
+            el.appendChild(vi[i].el);
+          }
+          vi[i]['skip_c'] = true;
+        }
+        if (undefined !== vi[i]['html']) {
+          if ($g.is_str(vi[i].html)) {
+            if ($g.is_el(el)) el.innerHTML += vi[i].html;
+            else {
+              v = $g.el('DIV');
+              v.innerHTML = vi[i].html;
+            }
+            vi[i]['skip_c'] = true;
+          }
+        }
+        if (undefined === vi[i]['skip_c'] || (undefined !== vi[i].skip_c && vi[i].skip_c)) {
+          if ('undefined' != typeof vi[i].ref) {
+            v = $g.id(vi[i].ref);
+            if (null !== v && null !== v.tagName.match(/^INPUT|TEXTAREA$/i)) isV = true;
+          } else if ('string' == typeof vi[i].tag) {
+            v = $g.el(vi[i].tag);
+            if (null !== vi[i].tag.match(/^INPUT|TEXTAREA$/i)) isV = true;
+            if (vi[i].tag.match(/^SELECT$/i) && undefined !== vi[i]['options']) {
+              var okey, oval, oel;
+              for (j = 0; j < vi[i].options.length; j++) {
+                for (okey in vi[i].options[j]) {
+                  oval = vi[i].options[j][okey];
+                  break;
+                }
+                oel = $g.el('OPTION', {value: okey}, oval);
+                //oel.value = okey;
+                if (undefined !== vi[i]['selected'] && vi[i].selected == okey) oel.selected = true;
+                v.appendChild(oel);
+              }
+            }
+          } else if ('string' == typeof vi[i].txt) {
+            v = document.createTextNode(vi[i].txt);
+            isT = true;
+          }
+          if (v && !isT) { // workaround for google maps api
+            if (null !== vi[i].tag.match(/^CANVAS$/i) && 'undefined' != typeof G_vmlCanvasManager)
+              G_vmlCanvasManager.initElement(v);
+          }
+          if (v && 'object' == typeof vi[i].atr) {
+            for (j in vi[i].atr) {
+              v.setAttribute(j, vi[i].atr[j]);
+              if (null !== j.match(/^SC$/i) && 'object' == typeof SC) SC.setSC(v, vi[i].atr[j]);
+            }
+          }
+          if (v && 'object' == typeof vi[i].css) {
+            for (j in vi[i].css) {
+              v.style[j] = vi[i].css[j];
+            }
+          }
+          if (v && 'object' == typeof vi[i].evn) {
+            for (j in vi[i].evn) {
+              $g.event(v, j, vi[i].evn[j]);
+            }
+          }
+          if ('string' == typeof vi[i].txt && !isT) {
+            if (v) {
+              if (isV) v.value = vi[i].txt;
+              else v.innerHTML = vi[i].txt;
+            }
+            else {
+              if (null !== el.tagName.match(/^INPUT|TEXTAREA$/i)) el.value = vi[i].txt;
+              else el.innerHTML = vi[i].txt;
+            }
+          }
+          //TODO: ignore TextNode childs ?
+          if (v && 'object' == typeof vi[i].ch && !isT) {
+            $g.inflate_view(v, vi[i].ch);
+          }
+          if ('object' == typeof vi[i]['layers'] && !isT) {
+            for (j = vi[i].layers.n - 1; j >= 0; j--) {
+              var rr = $g.inflate_view(el, [{
+                tag: 'CANVAS',
+                atr: {'id': vi[i].layers.ns + j, width: vi[i].layers.w, height: vi[i].layers.h, style: 'display:none'}
+              }]);
+              if ('function' == typeof vi[i]['layers_ini']) {
+                vi[i].layers_ini.call(this, rr[0], j);
+              }
+            }
+          }
+          if ($g.is_el(el) && $g.is_el(v)) {
+            if (undefined !== op && undefined !== op.dir && op.dir === 'before') {
+              el.parentNode.insertBefore(v, el)
+            } else if (undefined !== op && undefined !== op.dir && op.dir === 'after') {
+              el.parentNode.insertBefore(v, el.nextSibling);
+            } else if (undefined !== op && undefined !== op.dir && op.dir === 'begin') {
+              el.insertBefore(v, el.firstChild);
+            } else {
+              el.appendChild(v);
+            }
+          }
+          //TODO: need pause after appendChild() ?
+        }
+        //if($g.is_el(v))
+        r[i] = v;
+        /*if(null===v) {
+         if('undefined' != typeof vi[i].ref) {
+         v = $g.id(vi[i].ref);
+         } else {
+         v = el;
+         }
+         }*/
+        if ('function' == typeof vi[i].ini) {
+          vi[i].ini.call(this, v, vi[i], i, el);
+        }
+      }
+    }
+    return r;
+  };
+
+  $g.serialize_view = function (el, ops) {
+    var r = {}, ops = ops || {};
+    if ('object' == typeof el) {
+      if (el.nodeType == $g.NODE_ELEMENT) {
+        r['tag'] = el.nodeName;
+        r['atr'] = {};
+        if (undefined !== el['className'] && el.className.length) r.atr['class'] = el.className;
+        if (undefined !== el['id'] && el.id.length) r.atr['id'] = el.id;
+        if ('object' == typeof ops['styles']) {
+          r.atr['style'] = {};
+          for (var i in ops.styles) {
+            if (undefined !== el.style[i]) r.atr.style[ops.styles[i]] = el.style[i];
+          }
+        }
+        if (r.tag.match(/^CANVAS$/i)) {
+          r.atr['width'] = el.width;
+          r.atr['height'] = el.height;
+        }
+        if (el.hasChildNodes()) {
+          r['ch'] = [];
+          for (var i in el.childNodes) {
+            if (!(el.childNodes[i].nodeType == $g.NODE_ELEMENT || el.childNodes[i].nodeType == $g.NODE_TEXT)) continue;
+            var c = $g.serialize_view(el.childNodes[i]);
+            if (!$g.empty(c)) r['ch'].push(c);
+          }
+        } else {
+          var t = '' + el.innerHTML;
+          if (!t.length) t = $g.txt(el);
+          if (t.length) r['txt'] = t;
+        }
+      } else if (el.nodeType == $g.NODE_TEXT) {
+        var t = '' + el.nodeValue;
+        t = t.trim();
+        if (t.length) r['txt'] = t;
+      }
+    }
+    return r;
+  };
+
+// loading media
+
+  //hash of image objects {'path' : Image}
+  if ('object' != typeof $g.imgs) $g.imgs = {};
+  if ('object' != typeof $g.cnvs) $g.cnvs = {};
+  if ('object' != typeof $g.snds) $g.snds = {};
+
+  $g.load_img = function (url, id, cb, args) {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      if ('function' == typeof cb) {
+        if (undefined !== args) {
+          cb.call(this, img, id, args, url);
+        } else {
+          cb.call(this, img, id, null, url);
+        }
+      }
+      // remove event and self to prevent IE on animated gif loops and clear up garbage
+      if (img) img = img.onload = img.onabort = img.onerror = null;
+    }
+    img.src = url;
+    if ('object' != typeof $g.imgs) $g.imgs = {};
+    if (!id) id = url;
+    $g.imgs[id] = img;
+  };
+
+  $g.load_cnv = function (url, id, cb, args) {
+    $g.load_img(url, id, function (img) {
+      //console.log('load_img', img.width, img.height);
+      var c;
+      if ('object' == typeof args && args.hasOwnProperty('c')) {
+        c = args.c;
+//            console.log('c from args', url);
+      } else {
+        c = $g.el('canvas');
+//            console.log('c local created', url);
+      }
+      var dc = $g.d2c(c);
+      c.width = img.width;
+      c.height = img.height;
+      dc.drawImage(img, 0, 0);
+      if (undefined === args || (undefined !== args && 'undefined' == typeof args['no_cnvs'])) $g.cnvs[id] = c;
+      if ('function' == typeof cb) {
+        if (undefined !== args) {
+          cb.call(this, c, id, args, url);
+        } else {
+          cb.call(this, c, id, null, url);
+        }
+      }
+    }, args, url);
+  };
+
+  $g.load_snd = function (url, id) {
+    if ('undefined' != typeof Audio) {
+      if (undefined === id) id = url;
+      else if (null === id) id = url;
+      else if ('' == id) id = url;
+      $g.snds[id] = new Audio(url);
+    }
+  };
+
+  $g.load_js = function (uri, onsuccess, onerror, _context, args) {
+    var el = $g.el('SCRIPT');
+    if (undefined === _context) var _context = window;
+    else if (!_context) _context = window;
+    var a = Array.prototype.slice.call(arguments);
+    a.push(uri);
+    if (undefined !== args) {
+      if (!$g.is_arr(args)) args = [args];
+      a = a.concat(args);
+    }
+    if ($g.ie) {
+      //TODO: how to implement onerror for IE<=10?
+      $g.event(el, 'readystatechange', function () {
+        //console.log('readystatechange', this.readyState, this.status);
+        if (this.readyState == 'loaded' || this.readyState == 'completed') {
+          //$g.event(el, 'readystatechange', function() {
+          //    if(this.readyState=='completed') {
+          onsuccess.apply(_context, a);
+          //    }
+          //});
+        }
+      });
+    } else {
+      /*$g.event(el, 'load', function() {
+       onsuccess.apply(_context, a);
+       });
+       $g.event(el, 'error', function() {
+       onerror.apply(_context, a);
+       });*/
+      if ($g.is_fun(onsuccess)) $g.event(el, 'load', onsuccess);
+      if ($g.is_fun(onerror)) $g.event(el, 'error', onerror);
+    }
+    if (-1 != uri.search(/^https?\:\/\//i) || 0 == uri.indexOf('/') || 0 == uri.indexOf('.')) {
+      el.src = uri;
+    } else {
+      el.src = '/js/' + uri + '.js';
+    }
+    document.getElementsByTagName('head')[0].appendChild(el);
+  };
+
+  $g.load_css = function (uri) {
+    var el = $g.el('LINK');
+    el.type = 'text/css';
+    el.rel = 'stylesheet';
+    if (-1 != uri.search(/^https?\:\/\//i) || 0 == uri.indexOf('/')) {
+      el.href = uri;
+    } else {
+      var p1 = /^\//, p2 = /\.css$/;
+      if (!p1.test(uri)) {
+        uri = '/css/' + uri;
+      }
+      if (!p2.test(uri)) {
+        uri += '.css';
+      }
+      el.href = uri;
+    }
+    document.getElementsByTagName('head')[0].appendChild(el);
+  };
+
+  // drawing
+
+  $g.draw_img = function (img, vc, x, y, w, h, sx, sy, sw, sh) {
+    var i = null;
+    //console.log(typeof img, img);
+    if ('string' == typeof img) {
+      if ('undefined' != typeof $g.imgs[img]) i = $g.imgs[img];
+    } else if (null !== img) {
+      i = img;
+    }
+    if (undefined === x) var x = 0;
+    if (undefined === y) var y = 0;
+    // drawImage( image, sx, sy, sw, sh, dx, dy, dw, dh );
+    if ('object' == typeof i && null !== i && 'object' == typeof vc && 'undefined' != typeof vc.drawImage && !isNaN(x) && !isNaN(y)) {
+      if (undefined !== w && undefined !== h) {
+        if (isNaN(w) || !w) w = i.width;
+        if (isNaN(h) || !h) h = i.height;
+        if (undefined !== sx && undefined !== sy && !isNaN(sx) && !isNaN(sy)) {
+          if (undefined !== sw && undefined !== sh && !isNaN(sw) && !isNaN(sh)) {
+            vc.drawImage(i, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+          } else {
+            vc.drawImage(i, Math.round(sx), Math.round(sy), Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+          }
+        } else {
+          vc.drawImage(i, Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+        }
+      } else {
+        vc.drawImage(i, Math.round(x), Math.round(y));
+      }
+    }
+  };
+
+  $g.draw_cnv = function (cnv, vc, x, y, w, h, sx, sy, sw, sh) {
+    var c = null;
+    if ('string' == typeof cnv) {
+      if ('undefined' != typeof $g.cnvs[cnv]) c = $g.cnvs[cnv];
+    } else if (null !== cnv) {
+      c = cnv;
+    }
+    if (undefined === x) var x = 0;
+    if (undefined === y) var y = 0;
+    // drawImage( image, sx, sy, sw, sh, dx, dy, dw, dh );
+    if ('object' == typeof c && null !== c && 'object' == typeof vc && 'undefined' != typeof vc.drawImage && !isNaN(x) && !isNaN(y)) {
+      if (undefined !== w && undefined !== h) {
+        if (isNaN(w) || !w) w = i.width;
+        if (isNaN(h) || !h) h = i.height;
+        if (undefined !== sx && undefined !== sy && !isNaN(sx) && !isNaN(sy)) {
+          if (undefined !== sw && undefined !== sh && !isNaN(sw) && !isNaN(sh)) {
+            vc.drawImage(c, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+          } else {
+            vc.drawImage(c, Math.round(sx), Math.round(sy), Math.round(w), Math.round(h), Math.round(x), Math.round(y));
+          }
+        } else {
+          vc.drawImage(c, Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+        }
+      } else {
+        vc.drawImage(c, Math.round(x), Math.round(y));
+      }
+    }
+  };
+
+  $g.clear_cnv = function (id) {
+    var cnv;
+    if (undefined !== $g.cnvs[id]) {
+      cnv = $g.cnvs[id];
+    } else cnv = $g.id(id);
+    if (cnv) {
+      cnv.width = cnv.width;
+    }
+  };
+
+// sound api
+
+  $g.play_snd = function (id) {
+    if ($g._is_snds && 'object' == typeof $g.snds && undefined !== typeof $g.snds[id] &&
+      'function' == typeof $g.snds[id].play) $g.snds[id].play();
+  };
+  $g.stop_snd = function (id) {
+    if ('object' == typeof $g.snds && 'undefined' != typeof $g.snds[id] &&
+      'function' == typeof $g.snds[id].pause) $g.snds[id].pause();
+  };
+
+  if ('undefined' == typeof $g.ac) {
+    try {
+      $g.ac = new AudioContext();
+    } catch (e) {
+      //$g.err('Web Audio API is not supported in this browser');
+      $g.ac = null;
+    }
+  }
+
+  $g.play_syn = function (freq, time, type) {
+    if (!$g.ac) return;
+    var o = $g.ac.createOscillator();
+    o.frequency.value = freq;
+    o.type = ((undefined === type) ? 'square' : type);
+    o.connect($g.ac.destination);
+    o.start(0);
+    setTimeout(function () {
+      o.stop(0);
+      o.disconnect($g.ac.destination);
+    }, time);
+  };
+
+  $g._resize = function() {
+    if( typeof( window.innerWidth ) == 'number' ) {//Non-IE
+      $g.ww = window.innerWidth;
+      $g.wh = window.innerHeight;
+    } else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {//IE 6+ in 'standards compliant mode'
+      $g.ww = document.documentElement.clientWidth;
+      $g.wh = document.documentElement.clientHeight;
+    } else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {//IE 4 compatible
+      $g.ww = document.body.clientWidth;
+      $g.wh = document.body.clientHeight;
+    }
+  };
+
+  $g._keydown = function(e) {
+    var e = (window.event || e)
+    $g.kc = (e.keyCode || e.which);
+    $g.kALT = (e.altKey || null);
+    $g.kCTRL = (e.ctrlKey || null);
+    $g.kSHIFT = (e.shiftKey || null);
+  };
+
+// pub/sub
+
+  $g._mq = {};
+
+  $g.sub = function (channel, fn) {
+    if (!$g._mq[channel]) $g._mq[channel] = [];
+    $g._mq[channel].push({context: this, callback: fn});
+  };
+
+  $g.unsub = function (channel, fn) {
+    if (!$g._mq.hasOwnProperty(channel)) {
+      return false;
+    }
+    for (var i = 0, len = $g._mq[channel].length; i < len; i++) {
+      if ($g._mq[channel][i].callback === fn) {
+        $g._mq[channel].splice(i, 1);
+        return true;
+      }
+    }
+    return false;
+  };
+
+  $g.pub = function (channel) {
+    if (!$g._mq[channel]) return false;
+    var args = Array.prototype.slice.call(arguments, 1), i, l;
+    for (i = 0, l = $g._mq[channel].length; i < l; i++) {
+      var subscription = $g._mq[channel][i];
+      subscription.callback.apply(subscription.context, args);
+    }
+    return this;
+  };
+
+// geo location
+
+  $g.geo_loc = function (fn) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (e) {
+        if (e.coords) fn({lat: e.coords.latitude, long: e.coords.longitude});
+      });
+    }
+  };
+
+// css anim
+
+  $g.ontransend = function (el, fn) {
+    el.addEventListener("transitionend", fn, true);
+  };
+
+// browsers detection
+
+  //$g["ff"] = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+  $g['ff'] = typeof InstallTrigger !== 'undefined'; // Firefox 1.0+
+  $g['op'] = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0; // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
+  $g['sf'] = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0; // At least Safari 3+: "[object HTMLElementConstructor]"
+  $g['cr'] = !!window.chrome && !$g.op; // Chrome 1+
+  //if(undefined === $g['ie'])
+  $g['ie'] = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
+  $g['ie10'] = /*@cc_on!@*/false && document.documentMode === 10;
+  $g['ie11'] = $g.ie && navigator.userAgent.indexOf('MSIE') == -1;
+
+  return $g;
+
+}(window.lib || {}));
+
+function log() {console.log.apply(console || null, Array.prototype.slice.call(arguments));}
+
+function trace() {console.trace.apply(console || null, Array.prototype.slice.call(arguments));}
