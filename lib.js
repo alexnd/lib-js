@@ -1171,6 +1171,195 @@ var lib = (function ($g) {
     document.getElementsByTagName('head')[0].appendChild(el);
   };
 
+
+  //TODO: synchronous loop (start loading each next resource on load callback) ?
+  $g.load_assets = function (a) {
+    var r,
+      imgdir = ('undefined' == typeof $g.imgpath) ? '/img/' : $g.imgpath,
+      snddir = ('undefined' == typeof $g.sndpath) ? '/media/' : $g.sndpath;
+    if ($g.is_obj(a) && !$g.is_arr(a)) {
+      $g._load_a = [];
+      if (undefined !== a.js) {
+        if ($g.is_arr(a.js)) $g._load_a.concat(a.js);
+        else if ($g.is_str(a.js)) $g._load_a.push(a.js);
+      }
+      if (undefined !== a.css) {
+        if ($g.is_arr(a.css)) $g._load_a.concat(a.css);
+        else if ($g.is_str(a.css)) $g._load_a.push(a.css);
+      }
+      if (undefined !== a.img) {
+        if ($g.is_arr(a.img)) $g._load_a.concat(a.img);
+        else if ($g.is_str(a.img)) $g._load_a.push(a.img);
+      }
+      if (undefined !== a.cnv) {
+        if ($g.is_arr(a.cnv)) $g._load_a.concat(a.cnv);
+        else if ($g.is_str(a.cnv)) $g._load_a.push(a.cnv);
+      }
+      if (undefined !== a.snd) {
+        if ($g.is_arr(a.snd)) $g._load_a.concat(a.snd);
+        else if ($g.is_str(a.snd)) $g._load_a.push(a.snd);
+      }
+    }
+    $g._load_i = 0;
+    $g._load_timer = setInterval(function () {
+      if ($g._load_i >= $g._load_a.length) {
+        clearInterval($g._load_timer);
+        if ($g._load_vis && $g.id($g._load_el)) {
+          $g.id($g._load_el).style.display = 'none';
+        }
+        if ('function' == typeof $g.on_load_assets) $g.on_load_assets.call(null);
+      }
+    }, 100);
+    if ($g.is_arr(a)) {
+      $g._load_a = a;
+      for (var i in a) {
+        // images
+        r = a[i].match(/(.+)\.(gif|jpg|jpeg|png)$/i);
+        if (r !== null && r.length > 2) {
+          if (0 == a[i].indexOf('*')) {
+            //url, id, cb, args
+            $g.load_cnv(imgdir + a[i].substr(1), r[1].substr(1), function (cnv, id, args, url) {
+              if (!cnv) return null;
+              $g._on_load_asset(url);
+            });
+          } else {
+            //url, id, cb, args
+            $g.load_img(imgdir + a[i], r[1], function (img, id, args, url) {
+              if (!img) return null;
+              $g._on_load_asset(url);
+            });
+          }
+        } else {
+          // sounds
+          r = a[i].match(/(.+)\.(wav|ogg|mp3|mid)$/i);
+          if (r !== null && r.length > 2) {
+            $g.load_snd(snddir + a[i], r[1]);
+            $g._on_load_asset(a[i]);
+          } else {
+            // javascripts
+            if (-1 != a[i].search(/.+\.js$/i)) {
+              $g.load_js(a[i], function () {
+                $g._on_load_asset(a[i]);
+              }, function () {
+                $g._on_load_asset(a[i]);
+              });
+            } else {
+              // css
+              if (-1 != a[i].search(/.+\.css$/i)) {
+                $g.load_css(a[i]);
+                $g._on_load_asset(a[i]);
+              }
+            }
+          }
+        }
+      }
+    } else if ($g.is_obj(a)) {
+      if (undefined !== a.js) {
+        if ($g.is_arr(a.js)) for (var i = 0; i < a.js.length; i++) {
+          $g.load_js(a.js[i], function () {
+            $g._on_load_asset(a.js[i]);
+          }, function () {
+            $g._on_load_asset(a.js[i]);
+          });
+        }
+        else if ($g.is_str(a.js)) {
+          $g.load_js(a.js, function () {
+            $g._on_load_asset(a.js);
+          }, function () {
+            $g._on_load_asset(a.js);
+          });
+        }
+      }
+      // a.css
+      if (undefined !== a.css) {
+        if ($g.is_arr(a.css)) for (var i = 0; i < a.css.length; i++) {
+          $g.load_css(a.css[i]);
+          $g._on_load_asset(a.css[i]);
+        }
+        else if ($g.is_str(a.css)) {
+          $g.load_css(a.css);
+          $g._on_load_asset(a.css);
+        }
+      }
+      if (undefined !== a.css_inline && $g.is_arr(a.css_inline)) {
+        try {
+          var ss = Array.prototype.slice.call(document.styleSheets);
+          if (ss.length) {
+            var b = [].concat(a.css_inline);
+            for (var i = 0; i < ss.length; i++) {
+              if (undefined === css.cssRules) continue;
+              var rules = Array.prototype.slice.call(css.cssRules);
+              for (var j = 0; j < rules.length; j++) {
+                if (undefined === rules[j].cssRule) continue;
+                if (undefined === rules[j].cssRule.cssText) continue;
+                for (var k = 0; k < b.length; k++) {
+                  if (b[k] == rules[j].cssRule.cssText) b.splice(k, 1);
+                }
+              }
+            }
+            $g.add_css(b);
+          } else $g.add_css(a.css_inline);
+        } catch (_) {
+          err('error in $g.load_assets', _);
+        }
+      }
+      // a.img
+      if (undefined !== a.img) {
+        if ($g.is_arr(a.img)) for (var i = 0; i < a.img.length; i++) {
+          r = a.img[i].match(/(.+)\.(gif|jpg|jpeg|png)$/i);
+          r = ((!(r !== null && r.length > 2)) ? r[1] : a.img[i]);
+          $g.load_img(a.img[i], r, function (img, id, args, url) {
+            $g._on_load_asset(url);
+          });
+        }
+        else if ($g.is_str(a.img)) {
+          r = a.img.match(/(.+)\.(gif|jpg|jpeg|png)$/i);
+          r = ((!(r !== null && r.length > 2)) ? r[1] : a.img);
+          $g.load_img(a.img, r, function (img, id, args, url) {
+            $g._on_load_asset(url);
+          });
+        }
+      }
+      // a.cnv
+      if (undefined !== a.cnv) {
+        if ($g.is_arr(a.cnv)) for (var i = 0; i < a.cnv.length; i++) {
+          r = a.img[i].match(/(.+)\.(gif|jpg|jpeg|png)$/i);
+          r = ((!(r !== null && r.length > 2)) ? r[1] : a.img[i]);
+          $g.load_cnv(a.cnv[i], r, function (img, id, args, url) {
+            $g._on_load_asset(url);
+          });
+        }
+        else if ($g.is_str(a.cnv)) {
+          r = a.img.match(/(.+)\.(gif|jpg|jpeg|png)$/i);
+          r = ((!(r !== null && r.length > 2)) ? r[1] : a.img);
+          $g.load_cnv(a.cnv, r, function (img, id, args, url) {
+            $g._on_load_asset(url);
+          });
+        }
+      }
+      // a.snd
+      if (undefined !== a.snd) {
+        if ($g.is_arr(a.snd)) for (var i = 0; i < a.snd.length; i++) {
+          r = a.snd[i].match(/(.+)\.(wav|ogg|mp3|mid)$/i);
+          r = ((!(r !== null && r.length > 2)) ? r[1] : a.snd[i]);
+          $g.load_snd(snddir + a.snd[i], r);
+          $g._on_load_asset(a.snd[i]);
+        }
+        else if ($g.is_str(a.snd)) {
+          r = a.snd.match(/(.+)\.(wav|ogg|mp3|mid)$/i);
+          r = ((!(r !== null && r.length > 2)) ? r[1] : a.snd);
+          $g.load_snd(snddir + a.snd, r);
+          $g._on_load_asset(a.snd);
+        }
+      }
+    }
+  };
+
+  $g._on_load_asset = function(u) {
+    $g._load_i++;
+    if( undefined!==$g._load_el && $g.id($g._load_el)) $g.id($g._load_el).innerHTML = __('Loading') + ' ' + u + '...' + Math.floor((100/$g._load_a.length) * $g._load_i, 1) + '%';
+  };
+  
   // drawing
 
   $g.draw_img = function (img, vc, x, y, w, h, sx, sy, sw, sh) {
@@ -1347,19 +1536,79 @@ var lib = (function ($g) {
 // browsers detection
 
   //$g["ff"] = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-  $g['ff'] = typeof InstallTrigger !== 'undefined'; // Firefox 1.0+
-  $g['op'] = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0; // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
-  $g['sf'] = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0; // At least Safari 3+: "[object HTMLElementConstructor]"
-  $g['cr'] = !!window.chrome && !$g.op; // Chrome 1+
+  $g.ff = typeof InstallTrigger !== 'undefined'; // Firefox 1.0+
+  $g.op = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0; // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
+  $g.sf = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0; // At least Safari 3+: "[object HTMLElementConstructor]"
+  $g.cr = !!window.chrome && !$g.op; // Chrome 1+
   //if(undefined === $g['ie'])
-  $g['ie'] = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
-  $g['ie10'] = /*@cc_on!@*/false && document.documentMode === 10;
-  $g['ie11'] = $g.ie && navigator.userAgent.indexOf('MSIE') == -1;
+  $g.ie = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
+  $g.ie10 = /*@cc_on!@*/false && document.documentMode === 10;
+  $g.ie11 = $g.ie && navigator.userAgent.indexOf('MSIE') == -1;
+
+//namespaces
+  $g.svgNS = 'http://www.w3.org/2000/svg';
+  $g.xlinkNS = 'http://www.w3.org/1999/xlink';
+  $g.xulNS = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
 
   return $g;
 
 }(window.lib || {}));
 
-function log() {console.log.apply(console || null, Array.prototype.slice.call(arguments));}
+// polyfills
 
+if ('undefined'==typeof console) window.console={
+  '_alerts':true,
+  '_':function(){ if(console._alerts) alert(Array.prototype.slice.call(arguments).join('\n')); },
+  'assert':function(){ console._(arguments); },
+  'clear':function(){},
+  'count':function(){},
+  'debug':function(){ console._(arguments); },
+  'dir':function(){ console._(arguments); },
+  'dirxml':function(){},
+  'error':function(){ console._(arguments); },
+  'exception':function(){ console._(arguments); },
+  'group':function(){},
+  'groupCollapsed':function(){},
+  'groupEnd':function(){},
+  'info':function(){ console._(arguments); },
+  'log':function(){ console._(arguments); },
+  'profile':function(){},
+  'profileEnd':function(){},
+  'table':function(){ console._(arguments); },
+  'time':function(){},
+  'timeEnd':function(){},
+  'timeStamp':function(){},
+  'trace':function(){ console._(arguments); },
+  'warn':function(){ console._(arguments); }
+};
+
+if (!String.prototype.trim) {
+  String.prototype.trim = function () {
+    //return this.replace(/^\s+|\s+$/g,'');
+    return this.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+  }
+};
+
+window.requestAnimationFrame =
+  window.requestAnimationFrame ||
+  window.webkitRequestAnimationFrame ||
+  window.mozRequestAnimationFrame ||
+  window.oRequestAnimationFrame ||
+  window.msRequestAnimationFrame ||
+  function(cb, el) { window.setTimeout(function(){cb(+new Date());}, $g.timeout[$g.TIME_ANIM]); };
+
+window.URL = window.URL || window.webkitURL || null;
+
+window.AudioContext =
+  window.AudioContext ||
+  window.webkitAudioContext ||
+  window.mozAudioContext ||
+  window.oAudioContext ||
+  window.msAudioContext || null;
+
+// localization back compat
+if ('undefined'==typeof __) function __(k) { return (undefined!==window.i18n[k]) ? window.i18n[k] : k };
+
+// console sugar
+function log() {console.log.apply(console || null, Array.prototype.slice.call(arguments));}
 function trace() {console.trace.apply(console || null, Array.prototype.slice.call(arguments));}
