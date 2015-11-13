@@ -1,3 +1,10 @@
+/*
+ * Node.js application library
+ * Copyright (c) 2014-2015 Alexander Melanchenko
+ * http://alexnd.com
+ * Released under the MIT License
+ */
+
 if ('object' == typeof module && null !== module) module.exports = function (app) {
   var lib = {
 

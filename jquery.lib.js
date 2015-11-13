@@ -1,5 +1,16 @@
+/*
+ * Collection of some useful helper functions used under jQuery lib
+ * Copyright (c) 2012-2015 Alexander Melanchenko
+ * http://alexnd.com
+ * Released under the MIT License
+ */
+
 (function( $ ) {
 
+  /*
+   Fills selected element with hash of values, e.g:
+     $('#myForm').fill_form( {'username':'Gordon', '_csrf':'!123!'} );
+  */
   $.fn.fill_form = function(v) {
     return this.each(function(i, _el) {
       var pel = $(_el);
@@ -7,7 +18,6 @@
       for(var k in v) {
         if(!v.hasOwnProperty(k)) continue;
         var el = pel.find("input[name='"+k+"'],textarea[name='"+k+"']");
-        log('EL1',el);
         if (el.length) {
           if( el.first().attr('type') === 'checkbox' || el.first().attr('type') === 'radio' ) {
             if ($.isArray(v[k])) {
@@ -32,7 +42,6 @@
           }
         } else {
           el = pel.find("select[name='"+k+"']");
-          log('EL2',el);
           if (el.length) {
             el.find('option').each(function(j, o){
               if ($.isArray(v[k])) {
@@ -51,7 +60,6 @@
             });
           } else {
             el = $('#'+k);
-            log('EL3',el);
             if (el.length) {
               if ( el.attr('type') === 'checkbox' || el.attr('type') === 'radio' ) {
                 if (v[k].indexOf(el.val()) !== -1 ) {

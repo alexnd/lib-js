@@ -1,3 +1,10 @@
+/*
+ * HTML5 application library
+ * Copyright (c) 2012-2015 Alexander Melanchenko
+ * http://alexnd.com
+ * Released under the MIT License
+ */
+
 var lib = (function ($g) {
 
   var self = this;
