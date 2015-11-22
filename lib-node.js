@@ -60,6 +60,27 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return v === null;
     },
 
+    is_email: function (v) {
+      return (this.is_str(v) && v.match(/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i));
+    },
+
+    is_apikey: function(v) {
+      //TODO: match 363d8522-ef01-fb7f-c6c2-63a19e6c16b3
+      return (this.is_str(v) && v.match(/^[a-zA-Z0-9\-]{3,}$/));
+    },
+
+    is_username: function(v) {
+      return (this.is_str(v) && v.match(/^[a-zA-Z0-9_]{4,}$/));
+    },
+
+    is_phone: function(v) {
+      return (this.is_str(v) && v.match(/^[\s()+-]*([0-9][\s()+-]*){6,20}$/));
+    },
+
+    is_password: function(v) {
+      return ((this.is_str(v) && v.length) ? true : false);
+    },
+
     to_int: function (s) {
       var n = parseInt(s, 10);
       return n == null || isNaN(n) ? 0 : n;
@@ -72,12 +93,10 @@ if ('object' == typeof module && null !== module) module.exports = function (app
             if (a[i] == a2[j]) return true;
           }
         }
-        ;
         return false;
       } catch (e) {
         return null
       }
-      ;
     },
 
     in_arr: function (a) {
@@ -88,12 +107,10 @@ if ('object' == typeof module && null !== module) module.exports = function (app
             if (a[i] == arguments[j]) return i;
           }
         }
-        ;
         return null;
       } catch (e) {
         return null
       }
-      ;
     },
 
     arr_trim: function (a) {
@@ -101,13 +118,10 @@ if ('object' == typeof module && null !== module) module.exports = function (app
         for (var i = a.length; i--;) {
           if (a[i] === undefined) a.splice(i, 1);
         }
-        ;
-      } catch (e) {
-      }
-      ;
+      } catch (e) {}
     },
 
-    // converts numeric degrees to radians
+    // Convert numeric degrees to radians
     to_rad: function (a) {
       if (!isNaN(a)) {
         return parseFloat(a) * Math.PI / 180;
@@ -129,13 +143,13 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return String(Math.round(value * power) / power);
     },
 
-    // Returns a random integer between min and max
+    // Return a random integer between min and max
     // Using Math.round() will give you a non-uniform distribution!
     rnd_i: function (min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     },
 
-    // Returns a random number between min and max
+    // Return a random number between min and max
     rnd_a: function (min, max) {
       return Math.random() * (max - min) + min;
     },
@@ -146,19 +160,42 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
     },
 
-    uid: function () {
+    // Return a universally unique identifier in form 550e8400-e29b-41d4-a716-446655440000
+    uuid: function () {
       var s = function () {
         return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
       };
       return (s() + s() + '-' + s() + '-' + s() + '-' + s() + '-' + s() + s() + s());
     },
 
-    // calculate distance between 2 points
+    // Return a unique identifier with the given length
+    uid: function (len) {
+      var buf = []
+        , chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        , charlen = chars.length;
+      for (var i = 0; i < len; ++i) {
+        buf.push(chars[this.rnd_i(0, charlen - 1)]);
+      }
+      return buf.join('');
+    },
+
+    // Return a distance between 2 points
     dist: function (x1, y1, x2, y2) {
       if (!isNaN(x1) || !isNaN(x2) || !isNaN(y1) || !isNaN(y2)) return 0;
       return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     },
 
+    //  discuss at: http://phpjs.org/functions/uniqid/
+    // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+    //  revised by: Kankrelune (http://www.webfaktory.info/)
+    //        note: Uses an internal counter (in php_js global) to avoid collision
+    //        test: skip
+    //   example 1: uniqid();
+    //   returns 1: 'a30285b160c14'
+    //   example 2: uniqid('foo');
+    //   returns 2: 'fooa30285b1cd361'
+    //   example 3: uniqid('bar', true);
+    //   returns 3: 'bara20285b23dfd1.31879087'
     uniqid: function (prefix, more_entropy) {
       //  discuss at: http://phpjs.org/functions/uniqid/
       // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -175,7 +212,6 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       if (typeof prefix === 'undefined') {
         prefix = '';
       }
-
       var retId;
       var formatSeed = function (seed, reqWidth) {
         seed = parseInt(seed, 10)
@@ -189,7 +225,6 @@ if ('object' == typeof module && null !== module) module.exports = function (app
         }
         return seed;
       };
-
       // BEGIN REDUNDANT
       if (!lib.php_js) {
         lib.php_js = {};
@@ -199,7 +234,6 @@ if ('object' == typeof module && null !== module) module.exports = function (app
         lib.php_js.uniqidSeed = Math.floor(Math.random() * 0x75bcd15);
       }
       lib.php_js.uniqidSeed++;
-
       retId = prefix; // start with prefix, add current milliseconds hex string
       retId += formatSeed(parseInt(new Date()
           .getTime() / 1000, 10), 8);
@@ -210,11 +244,10 @@ if ('object' == typeof module && null !== module) module.exports = function (app
           .toFixed(8)
           .toString();
       }
-
       return retId;
     },
 
-    // return y position of point on line x1;y1, x2;y2 (x between x1 and x2)
+    // Return y position of point on line x1;y1, x2;y2 (x between x1 and x2)
     allign_terrain_y: function (x1, y1, x2, y2, x) {
       if (y1 == y2 || x1 == x2) {
         var y = y1;
@@ -224,19 +257,19 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return y;
     },
 
-    // return terrain unit position pased on real X or Y
+    // Return terrain unit position pased on real X or Y
     terrain_unit_coord: function (x) {
       if (!isNaN(x) && x > 0) return Math.ceil(x / 20);
       return 0;
     },
 
-    // return real position base on terrain unit X or Y
+    // Return real position base on terrain unit X or Y
     terrain_real_coord: function (x) {
       if (!isNaN(x)) return x * 20;
       return 0;
     },
 
-    //return current timestamp
+    // Return current timestamp (milliseconds since 01-01-1970)
     ts: function () {
       return Date.now();
     },
@@ -348,12 +381,12 @@ if ('object' == typeof module && null !== module) module.exports = function (app
         '<meta charset="utf-8"/>' +
         head +
         '</head>' +
-        '<body style="margin-left: 25px">' +
+        '<body>' +
         body +
         '</body>' +
         '</html>';
       return doc;
-    },
+    }
 
   };
   return lib;
