@@ -65,7 +65,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
     },
 
     is_apikey: function(v) {
-      //TODO: match 363d8522-ef01-fb7f-c6c2-63a19e6c16b3
+      //TODO: match 363d8522-ef01-fb7f-c6c2-63a19e6c16b3 (must be named is_uuid())
       return (this.is_str(v) && v.match(/^[a-zA-Z0-9\-]{3,}$/));
     },
 
@@ -74,7 +74,9 @@ if ('object' == typeof module && null !== module) module.exports = function (app
     },
 
     is_phone: function(v) {
-      return (this.is_str(v) && v.match(/^[\s()+-]*([0-9][\s()+-]*){6,20}$/));
+      //return (this.is_str(v) && v.match(/^[\s()+-]*([0-9][\s()+-]*){6,20}$/));
+	  //TODO: temporary better one
+	  return (this.is_str(v) && v.match(/^\+\d{1,}[0-9 \-]{8,26}$/));
     },
 
     is_password: function(v) {
@@ -333,6 +335,19 @@ if ('object' == typeof module && null !== module) module.exports = function (app
         return d.getTime();
       }
       return 0;
+    },
+	
+	ts_to_sqldate : function(_v) {
+      var v = _v || null;
+      if (this.is_str(v)) v = this.to_int(v);
+      var d = new Date(v);
+      var m = d.getMonth() - 1;
+      return d.getFullYear() + '-' + 
+      ((d.getMonth() + 1 < 10) ? ('0' + (d.getMonth() + 1)) : (d.getMonth() + 1)) + '-' +
+      ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + ' ' +
+      ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' +
+      ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes()) + ':' + 
+      ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
     },
 
     parseCookies: function (request) {
