@@ -747,6 +747,7 @@ var lib = (function ($g) {
   // convert string YYYY-MM-DD hh:mm:ss date to unix timestamp (seconds since 1970)
   $g.sqldate_to_ts = function (s) {
     var p = s.match(/^(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$/), d = new Date();
+	if (!p) p = s.match(/^(\d+)-(\d+)-(\d+)$/);
     if (p) {
       d.setFullYear(p[1]);
       d.setMonth(p[2]);
