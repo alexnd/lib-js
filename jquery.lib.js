@@ -23,14 +23,16 @@
             if ($.isArray(v[k])) {
               el.each(function(j, o){
                 if (v[k].indexOf($(o).val()) !== -1 ) {
-                  $(o).attr('checked', true);
+                  $(o).get(0).checked = true;
                 } else {
-                  $(o).attr('checked', false);
+                  $(o).get(0).checked = false;
                 }
               });
             } else {
               el.each(function(j, o){
-                if (v[k] === $(o).val() ) {
+                //if (v[k] === $(o).val() ) {
+                $(o).val(v[k]);
+                if (v[k]) {
                   $(o).get(0).checked = true;
                 } else {
                   $(o).get(0).checked = false;
@@ -63,9 +65,9 @@
             if (el.length) {
               if ( el.attr('type') === 'checkbox' || el.attr('type') === 'radio' ) {
                 if (v[k].indexOf(el.val()) !== -1 ) {
-                  el.attr('checked', true);
+                  el.get(0).checked = true;
                 } else {
-                  el.attr('checked', false);
+                  el.get(0).checked = false;
                 }
               } else if ( el.prop('nodeName') === 'SELECT') {
                 el.find('option').each(function(j, o){

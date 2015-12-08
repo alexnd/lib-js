@@ -199,18 +199,6 @@ if ('object' == typeof module && null !== module) module.exports = function (app
     //   example 3: uniqid('bar', true);
     //   returns 3: 'bara20285b23dfd1.31879087'
     uniqid: function (prefix, more_entropy) {
-      //  discuss at: http://phpjs.org/functions/uniqid/
-      // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-      //  revised by: Kankrelune (http://www.webfaktory.info/)
-      //        note: Uses an internal counter (in php_js global) to avoid collision
-      //        test: skip
-      //   example 1: uniqid();
-      //   returns 1: 'a30285b160c14'
-      //   example 2: uniqid('foo');
-      //   returns 2: 'fooa30285b1cd361'
-      //   example 3: uniqid('bar', true);
-      //   returns 3: 'bara20285b23dfd1.31879087'
-
       if (typeof prefix === 'undefined') {
         prefix = '';
       }
@@ -318,6 +306,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
     // convert date string 'YYYY-MM-DD hh:mm:ss' to unix timestamp (seconds since 1970)
     sqldate_to_ts: function (s) {
       var p = s.match(/^(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$/), d = new Date();
+      if (!p) p = s.match(/^(\d+)-(\d+)-(\d+)$/);
       if (p) {
         d.setFullYear(p[1]);
         d.setMonth(p[2]);
@@ -336,10 +325,9 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       }
       return 0;
     },
-	
-	ts_to_sqldate : function(_v) {
-      var v = _v || null;
-      if (this.is_str(v)) v = this.to_int(v);
+
+    ts_to_sqldate : function(_v) {
+      var v = _v || Date.now();
       var d = new Date(v);
       var m = d.getMonth() - 1;
       return d.getFullYear() + '-' + 
