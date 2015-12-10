@@ -83,6 +83,14 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return ((this.is_str(v) && v.length) ? true : false);
     },
 
+	is_lat: function(v) {
+		return (v!==null && (''+v).match(/^(\+|-)?(?:90(?:(?:\.0{1,15})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,15})?))$/)) ? true : false;
+	},
+	
+	is_lng: function(v) {
+		return (v!==null && (''+v).match(/^(\+|-)?(?:180(?:(?:\.0{1,15})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,15})?))$/)) ? true : false;
+	},
+	
     to_int: function (s) {
       var n = parseInt(s, 10);
       return n == null || isNaN(n) ? 0 : n;
@@ -187,6 +195,18 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     },
 
+	rEarth: 6372795, // Radius of the earth in m
+	dist_latlng: function (lat1,lng1,lat2,lng2) {
+		var dLat = $g.to_rad(lat2-lat1);
+		var dLng = $g.to_rad(lng2-lng1);
+		var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+		 Math.cos($g.to_rad(lat1)) * Math.cos($g.to_rad(lat2)) * 
+		 Math.sin(dLng/2) * Math.sin(dLng/2); 
+		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+		var d = $g.rEarth * c;
+		return d;
+	},
+	
     //  discuss at: http://phpjs.org/functions/uniqid/
     // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
     //  revised by: Kankrelune (http://www.webfaktory.info/)

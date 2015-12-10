@@ -1530,7 +1530,7 @@ var lib = (function ($g) {
   $g.geo_loc = function (fn) {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function (e) {
-        if (e.coords) fn({lat: e.coords.latitude, long: e.coords.longitude});
+        if (e.coords) fn({lat: e.coords.latitude, lng: e.coords.longitude});
       });
     }
   };
@@ -1538,12 +1538,12 @@ var lib = (function ($g) {
 // css anim
 
   $g.ontransend = function (el, fn) {
-    el.addEventListener("transitionend", fn, true);
+    el.addEventListener('transitionend', fn, true);
   };
 
 // browsers detection
 
-  //$g["ff"] = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+  //$g['ff'] = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
   $g.ff = typeof InstallTrigger !== 'undefined'; // Firefox 1.0+
   $g.op = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0; // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
   $g.sf = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0; // At least Safari 3+: "[object HTMLElementConstructor]"
