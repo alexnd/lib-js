@@ -792,6 +792,18 @@ var lib = (function ($g) {
     return s;
   };
 
+  $g.ts_to_sqldate = function(_v) {
+    var v = _v || Date.now();
+    var d = new Date(v);
+    var m = d.getMonth() - 1;
+    return d.getFullYear() + '-' +
+      ((d.getMonth() + 1 < 10) ? ('0' + (d.getMonth() + 1)) : (d.getMonth() + 1)) + '-' +
+      ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + ' ' +
+      ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' +
+      ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes()) + ':' +
+      ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
+  };
+
   // calculate distance between 2 points
   $g.dist = function (x1, y1, x2, y2) {
     if (!isNaN(x1) || !isNaN(x2) || !isNaN(y1) || !isNaN(y2)) return 0;
