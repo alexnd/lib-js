@@ -16,7 +16,9 @@ console.log(lib.is_lat(-91), lib.is_lng('123.456'));
 console.log(lib.is_lat('045'), lib.is_lng(180));
 console.log(lib.is_lat(50.476765699999994), lib.is_lng(0));*/
 
-console.log( lib.to_numstr(null) );
+/*console.log( lib.to_numstr(null) );
 console.log( lib.to_numstr(0.1) );
 console.log( lib.to_numstr(-0.1) );
-console.log( lib.to_numstr('') );
+console.log( lib.to_numstr('') );*/
+
+console.log( lib.serialize({foo:'Batman', joe:-0.5}) );

@@ -36,7 +36,7 @@ var lib = (function ($g) {
       if (obj.hasOwnProperty(p)) {
         var k = prefix ? prefix + '[' + p + ']' : p,
           v = obj[p];
-        str.push(typeof v == 'object' ? serialize(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
+        str.push(typeof v == 'object' ? $g.serialize(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
       }
     }
     return str.join('&');
@@ -118,9 +118,14 @@ var lib = (function ($g) {
 
   $g.to_int = function (s) {
     var n = parseInt(s, 10);
-    return n == null || isNaN(n) ? 0 : n;
+    return n === null || isNaN(n) ? 0 : n;
   };
   $g.parse_num = $g.to_int;
+
+  $g.to_float = function (v) {
+    var n = parseFloat(v);
+    return n === null || isNaN(n) ? 0 : n;
+  };
 
   $g.arr_intersect = function (a, a2) {
     try {
@@ -227,6 +232,13 @@ var lib = (function ($g) {
   // Using Math.round() will give you a non-uniform distribution!
   $g.rnd_i = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  $g.rnd_circ = function () {
+    var t = 2 * Math.PI * Math.random();
+    var u = Math.random() + Math.random();
+    var r = (u>1) ? 2-u : u;
+    return [r * Math.cos(t), r * Math.sin(t)];
   };
 
   $g.err = function (s) {
@@ -810,6 +822,127 @@ var lib = (function ($g) {
     return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
   };
 
+  // is point belongs to polygon
+  $g.point_in_poly = function (v, p, is_str, is_verts_arr, p_latlng) {
+    if (undefined !== is_str && is_str) v = $g.json_decode(v);
+    if (undefined !== p_latlng && p_latlng && $g.is_obj(p)) {
+      if (is_verts_arr)
+        p = [p.lat, p.lng];
+      else
+        p = {x:p.lat, y:p.lng};
+    }
+    var r = 0, n = v.length;
+    if (n) {
+      v.push(v[0]);
+      var vn,
+        cn = 0; // the crossing number counter
+      // loop through all edges of the polygon
+      for (var i=0; i < n; i++) { // edge from V[i]  to V[i+1]
+        if (undefined!==is_verts_arr && is_verts_arr) {
+          if (((v[i][1] <= p[1]) && (v[i+1][1] > p[1])) // an upward crossing
+            || ((v[i][1] > p[1]) && (v[i+1][1] <= p[1]))) { // a downward crossing
+            // compute the actual edge-ray intersect x-coordinate
+            vt = (p[1] - v[i][1]) / (v[i+1][1] - v[i][1]);
+            if (p[0] < v[i][0] + vt * (v[i+1][0] - v[i][0])) // P.x < intersect
+              ++cn; // a valid crossing of y=P.y right of P.x
+          }
+        } else {
+          if (((v[i].y <= p.y) && (v[i+1].y > p.y)) // an upward crossing
+            || ((v[i].y > p.y) && (v[i+1].y <= p.y))) { // a downward crossing
+            // compute the actual edge-ray intersect x-coordinate
+            vt = (p.y - v[i].y) / (v[i+1].y - v[i].y);
+            if (p.x < v[i].x + vt * (v[i+1].x - v[i].x)) // P.x < intersect
+              ++cn; // a valid crossing of y=P.y right of P.x
+          }
+        }
+      }
+      r = cn & 1; // 0 if even (out), and 1 if  odd (in)
+    }
+    return r;
+  };
+
+  /* return bounding rectangle of path
+   input: [[lat,lng],...] or [{lat,lng},...]
+   output:
+   north (0)
+   west (1) *********{x2,y2} east (3)
+   {x1,y1}********
+   south (2)
+   */
+  $g.path_bounds = function (path) {
+    var r = [];
+    for (var i=0; i<path.length; i++) {
+      if (i===0) {
+        if ($g.is_arr(path[i])) {
+          r.push(path[i][0]); //0: y2 (north)
+          r.push(path[i][1]); //1: x1 (west)
+          r.push(path[i][0]); //2: y1 (south)
+          r.push(path[i][1]); //3: x2 (east)
+        } else {
+          r = { north: path[i].lat, west: path[i].lng, south: path[i].lat, east: path[i].lng };
+        }
+      } else {
+        if ($g.is_arr(r)) {
+          if (path[i][0] < r[0]) r[0] = path[i][0];
+          else if (path[i][0] > r[2]) r[2] = path[i][0];
+          if (path[i][1] < r[1]) r[1] = path[i][1];
+          else if (path[i][1] > r[3]) r[3] = path[i][1];
+        } else {
+          if (path[i].lat < r.north) r.north = path[i].lat;
+          else if (path[i].lat > r.south) r.south = path[i].lat;
+          if (path[i].lng < r.west) r.west = path[i].lng;
+          else if (path[i].lng > r.east) r.east = path[i].lng;
+        }
+      }
+    }
+    return r;
+  };
+
+  //calculate center of path using google LatLngBounds
+  $g.path_center = function(path, plain) {
+    var bounds = new google.maps.LatLngBounds();
+    if ($g.is_arr(path) && path.length) {
+      for (var i = 0; i < path.length; i++) {
+        if ('function'==typeof path[i].lat)
+          bounds.extend(new google.maps.LatLng(path[i].lat(), path[i].lng()));
+        else
+          bounds.extend(new google.maps.LatLng(path[i].lat, path[i].lng));
+      }
+    } else if (lib.is_obj(path) && !lib.is_arr(path)) {
+      path.forEach(function(p) {
+        bounds.extend(new google.maps.LatLng(p.lat(), p.lng()));
+      });
+    } else
+      return null;
+    var c = bounds.getCenter();
+    if (undefined!==plain) {
+      if (plain == 2)
+        return [c.lat(), c.lng()];
+      else if (plain)
+        return { lat: c.lat(), lng: c.lng() };
+      else
+        return c;
+    } else
+      return c;
+  };
+
+  //convert mvcarray of google geoobjects to array of arrays[2] or array of {lat,lng}
+  $g.path_plain = function(obj, latlng) {
+    var path = [], pp;
+    if ('object' == typeof obj && obj !== null) {
+      if ('function' == typeof obj.getPath)
+        pp = obj.getPath();
+      else pp = obj;
+      pp.forEach(function(p) {
+        if (undefined!==latlng && latlng)
+          path.push({lat:p.lat(), lng:p.lng()});
+        else
+          path.push([p.lat(), p.lng()]);
+      });
+    }
+    return path;
+  };
+
   $g.uid = function () {
     var s = function () {
       return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
@@ -1130,6 +1263,7 @@ var lib = (function ($g) {
       else if ('' == id) id = url;
       $g.snds[id] = new Audio(url);
     }
+    //log('Audio', $g.snds[id]);
   };
 
   $g.load_js = function (uri, onsuccess, onerror, _context, args) {

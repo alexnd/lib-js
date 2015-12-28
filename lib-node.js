@@ -96,6 +96,11 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return n == null || isNaN(n) ? 0 : n;
     },
 
+    to_float: function (v) {
+      var n = parseFloat(v);
+      return n === null || isNaN(n) ? 0 : n;
+    },
+
     to_numstr: function (v) {
       if (v === null) return '0';
       else if (v === '') return '0';
@@ -176,6 +181,13 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
     },
 
+    rnd_circ : function () {
+      var t = 2 * Math.PI * Math.random();
+      var u = Math.random() + Math.random();
+      var r = (u>1) ? 2-u : u;
+      return [r * Math.cos(t), r * Math.sin(t)];
+    },
+
     // Return a universally unique identifier in form 550e8400-e29b-41d4-a716-446655440000
     uuid: function () {
       var s = function () {
@@ -195,6 +207,19 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return buf.join('');
     },
 
+    // make url-encoded representation of object to use as http requests data
+    serialize : function(obj, prefix) {
+      var str = [];
+      for (var p in obj) {
+        if (obj.hasOwnProperty(p)) {
+          var k = prefix ? prefix + '[' + p + ']' : p,
+            v = obj[p];
+          str.push(typeof v == 'object' ? this.serialize(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
+        }
+      }
+      return str.join('&');
+    },
+
     // Return a distance between 2 points
     dist: function (x1, y1, x2, y2) {
       if (!isNaN(x1) || !isNaN(x2) || !isNaN(y1) || !isNaN(y2)) return 0;
@@ -211,6 +236,81 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       var d = $g.rEarth * c;
       return d;
+    },
+
+    /* return bounding rectangle of path
+     input: [[lat,lng],...] or [{lat,lng},...]
+     output:
+                north (0)
+     west (1) *********{x2,y2} east (3)
+              {x1,y1}********
+                south (2)
+    */
+    path_bounds : function (path) {
+      var r = [];
+      for (var i=0; i<path.length; i++) {
+        if (i===0) {
+          if (this.is_arr(path[i])) {
+            r.push(path[i][0]); //0: y2 (north)
+            r.push(path[i][1]); //1: x1 (west)
+            r.push(path[i][0]); //2: y1 (south)
+            r.push(path[i][1]); //3: x2 (east)
+          } else {
+            r = { north: path[i].lat, west: path[i].lng, south: path[i].lat, east: path[i].lng };
+          }
+        } else {
+          if (this.is_arr(r)) {
+            if (path[i][0] < r[0]) r[0] = path[i][0];
+            else if (path[i][0] > r[2]) r[2] = path[i][0];
+            if (path[i][1] < r[1]) r[1] = path[i][1];
+            else if (path[i][1] > r[3]) r[3] = path[i][1];
+          } else {
+            if (path[i].lat < r.north) r.north = path[i].lat;
+            else if (path[i].lat > r.south) r.south = path[i].lat;
+            if (path[i].lng < r.west) r.west = path[i].lng;
+            else if (path[i].lng > r.east) r.east = path[i].lng;
+          }
+        }
+      }
+      return r;
+    },
+
+    point_in_poly : function (v, p, is_str, is_verts_arr, p_latlng) {
+      if (undefined !== is_str && is_str) v = this.json_decode(v);
+      if (undefined !== p_latlng && p_latlng && this.is_obj(p)) {
+        if (is_verts_arr)
+          p = [p.lat, p.lng];
+        else
+          p = {x:p.lat, y:p.lng};
+      }
+      var r = 0, n = v.length;
+      if (n) {
+        v.push(v[0]);
+        var vn,
+          cn = 0; // the crossing number counter
+        // loop through all edges of the polygon
+        for (var i=0; i < n; i++) { // edge from V[i]  to V[i+1]
+          if (undefined!==is_verts_arr && is_verts_arr) {
+            if (((v[i][1] <= p[1]) && (v[i+1][1] > p[1])) // an upward crossing
+              || ((v[i][1] > p[1]) && (v[i+1][1] <= p[1]))) { // a downward crossing
+              // compute the actual edge-ray intersect x-coordinate
+              vt = (p[1] - v[i][1]) / (v[i+1][1] - v[i][1]);
+              if (p[0] < v[i][0] + vt * (v[i+1][0] - v[i][0])) // P.x < intersect
+                ++cn; // a valid crossing of y=P.y right of P.x
+            }
+          } else {
+            if (((v[i].y <= p.y) && (v[i+1].y > p.y)) // an upward crossing
+              || ((v[i].y > p.y) && (v[i+1].y <= p.y))) { // a downward crossing
+              // compute the actual edge-ray intersect x-coordinate
+              vt = (p.y - v[i].y) / (v[i+1].y - v[i].y);
+              if (p.x < v[i].x + vt * (v[i+1].x - v[i].x)) // P.x < intersect
+                ++cn; // a valid crossing of y=P.y right of P.x
+            }
+          }
+        }
+        r = cn & 1;    // 0 if even (out), and 1 if  odd (in)
+      }
+      return r;
     },
 	
     //  discuss at: http://phpjs.org/functions/uniqid/
@@ -315,7 +415,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
 
     // convert date string 'DD.MM.YYYY' to unix timestamp (seconds since 1970)
     dt_to_ts: function (s) {
-      var p = s.match(/^(\d+)\.(\d+)\.(\d+)$/), d = new Date();
+      var p = s.match(/^(\d+)\.(\d+)\.(\d+)/), d = new Date();
       if (p) {
         d.setFullYear(p[3]);
         d.setMonth(p[2]);

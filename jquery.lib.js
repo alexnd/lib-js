@@ -53,7 +53,7 @@
                   $(o).get(0).selected = false;
                 }
               } else {
-                if( v[k] === $(o).val() ) {
+                if( v[k] == $(o).val() ) {
                   $(o).get(0).selected = true;
                 } else {
                   $(o).get(0).selected = false;
@@ -78,7 +78,7 @@
                       $(o).get(0).selected = false;
                     }
                   } else {
-                    if( v[k] === $(o).val() ) {
+                    if( v[k] == $(o).val() ) {
                       $(o).get(0).selected = true;
                     } else {
                       $(o).get(0).selected = false;
