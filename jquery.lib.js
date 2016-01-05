@@ -1,6 +1,6 @@
 /*
  * Collection of some useful helper functions used under jQuery lib
- * Copyright (c) 2012-2015 Alexander Melanchenko
+ * Copyright (c) 2012-2016 Alexander Melanchenko
  * http://alexnd.com
  * Released under the MIT License
  */
@@ -95,5 +95,13 @@
       }
     });
   };
+
+  $.fn.onchangeval = function() {
+    return this.each (function(i, el) {
+      $(el).change(function () {
+        $(this).val(($(this).get(0).checked) ? 1 : 0);
+      });
+    });
+  }
 
 }( jQuery ));

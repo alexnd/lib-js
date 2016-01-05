@@ -1,6 +1,6 @@
 /*
  * Node.js application library
- * Copyright (c) 2014-2015 Alexander Melanchenko
+ * Copyright (c) 2014-2016 Alexander Melanchenko
  * http://alexnd.com
  * Released under the MIT License
  */
@@ -81,6 +81,10 @@ if ('object' == typeof module && null !== module) module.exports = function (app
 
     is_password: function(v) {
       return ((this.is_str(v) && v.length) ? true : false);
+    },
+
+    is_url: function(v) {
+      return (this.is_str(v) && v.match(/^https?\:\/\/\w+/));
     },
 
     is_lat: function (v) {
