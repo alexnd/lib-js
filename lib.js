@@ -5,7 +5,7 @@
  * Released under the MIT License
  */
 
-var lib = (function ($g) {
+(function ($g) {
 
   var self = this;
 
@@ -602,6 +602,21 @@ var lib = (function ($g) {
     }
   };
 
+  //ajax wrapper
+/*
+  var xhr = $g.xhr();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      try {
+        var r = lib.json_decode(req.responseText);
+      } catch(_){
+
+      }
+    }
+  };
+  xhr.open('GET', 'foo=bar', true);
+  xhr.send(null);
+*/
   $g.xhr = function () {
     var ref = null;
     if (window.XMLHttpRequest) {
@@ -624,6 +639,36 @@ var lib = (function ($g) {
     return ref;
   };
 
+  //http://www.html5rocks.com/en/tutorials/cors/?redirect_from_locale=ru
+  //var xhr = lib.xhr_cors('GET', url);
+  //if (!xhr) throw new Error('CORS not supported');
+  //xhr.onload = function() {
+  //  var responseText = xhr.responseText;
+  //  log(responseText);
+  //};
+  //xhr.onerror = function() {
+  //  log('There was an error!');
+  //};
+  //xhr.send();
+  $g.xhr_cors = function (method, url) {
+    var xhr = new XMLHttpRequest();
+    if ("withCredentials" in xhr) {
+      // Check if the XMLHttpRequest object has a "withCredentials" property.
+      // "withCredentials" only exists on XMLHTTPRequest2 objects.
+      xhr.open(method, url, true);
+    } else if (typeof XDomainRequest != "undefined") {
+      // Otherwise, check if XDomainRequest.
+      // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+      xhr = new XDomainRequest();
+      xhr.open(method, url);
+    } else {
+      // Otherwise, CORS is not supported by the browser.
+      xhr = null;
+    }
+	if (xhr !== null) xhr.withCredentials = true;
+    return xhr;
+  };
+  
   $g.sendfile = function (url, file, varname, filename, extravars, load_img_back, cb, formEl) {
     var xhr = $g.xhr();
     if (undefined !== formEl) {
@@ -735,12 +780,24 @@ var lib = (function ($g) {
     }
   };
 
+  $g.months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  $g.months_short = ['Янв','Фев','Мар','Апр','Мая','Июн','Июл','Авг','Сен','Окт','Ной','Дек'];
   // format date
   $g.dtformat = function (t) {
     if ('undefined' == typeof t) var t = $g.ts();
     var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + '.' + $g.months[d.getMonth()] + '.' + d.getFullYear() + '/' +
       ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' + ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes())
       + ':' + ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
+    return s;
+  };
+  $g.dtf = function (t) {
+    if ('undefined' == typeof t) var t = $g.ts();
+    if ($g.is_str(t)) t = $g.to_int(t);
+    var cd = new Date();
+    var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + ' ' + $g.months_short[d.getMonth()];
+    if (d.getFullYear() != cd.getFullYear()) {
+      s += ' '  + d.getFullYear();
+    }
     return s;
   };
 
@@ -818,6 +875,10 @@ var lib = (function ($g) {
       ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' +
       ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes()) + ':' +
       ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
+  };
+
+  $g.leapYear = function(y) {
+    return ((y % 4 == 0) && (y % 100 != 0)) || (y % 400 == 0);
   };
 
   // calculate distance between 2 points
@@ -1708,9 +1769,7 @@ var lib = (function ($g) {
   $g.xlinkNS = 'http://www.w3.org/1999/xlink';
   $g.xulNS = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
 
-  return $g;
-
-}(window.lib || {}));
+})(window.lib || (window.lib={}));
 
 // polyfills
 
@@ -1749,8 +1808,8 @@ if (!String.prototype.trim) {
 
 //https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
 // Шаги алгоритма ECMA-262, 5-е издание, 15.4.4.18
-// Ссылка (en): http://es5.github.io/#x15.4.4.18
-// Ссылка (ru): http://es5.javascript.ru/x15.4.html#x15.4.4.18
+// en: http://es5.github.io/#x15.4.4.18
+// ru: http://es5.javascript.ru/x15.4.html#x15.4.4.18
 if (!Array.prototype.forEach) {
 
   Array.prototype.forEach = function (callback, thisArg) {

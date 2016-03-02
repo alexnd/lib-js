@@ -468,6 +468,10 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
     },
 
+    leapYear : function(y) {
+      return ((y % 4 == 0) && (y % 100 != 0)) || (y % 400 == 0);
+    },
+
     parseCookies: function (request) {
       var list = {},
         rc = request.headers.cookie;
