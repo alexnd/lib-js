@@ -223,6 +223,16 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       }
       return str.join('&');
     },
+	
+    unserialize : function (s) {
+      return s.split('&').reduce(function (a, p) {
+        var ps = p.split('=').map(function (v) {
+          return decodeURIComponent(v.replace('+', ' '));
+        });
+        a[ps[0]] = ps[1];
+        return a;
+      }, {});
+    },
 
     // Return a distance between 2 points
     dist: function (x1, y1, x2, y2) {
