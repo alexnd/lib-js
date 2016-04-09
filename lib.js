@@ -1989,5 +1989,6 @@ window.AudioContext =
 if ('undefined'==typeof __) function __(k) { return (undefined!==window.i18n[k]) ? window.i18n[k] : k };
 
 // console sugar
-function log() {console.log.apply(console || null, Array.prototype.slice.call(arguments));}
-function trace() {console.trace.apply(console || null, Array.prototype.slice.call(arguments));}
+var log = console.log.bind(console);
+var trace = console.trace.bind(console);
+
