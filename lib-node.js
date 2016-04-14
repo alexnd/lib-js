@@ -40,6 +40,10 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return s.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g, '').replace(/\s+/g, ' ');
     },
 
+    capitalise: function (s) {
+      return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    },
+
     is_arr: function (a) {
       return lib.to_str.call(a) === '[object Array]';
     },

@@ -237,6 +237,10 @@
     return s.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g, '').replace(/\s+/g, ' ');
   };
 
+  $g.capitalise = function (s) {
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  };
+
   // Returns a random number between min and max
   $g.rnd_a = function (min, max) {
     return Math.random() * (max - min) + min;
@@ -804,7 +808,8 @@
     if ('undefined' == typeof t) var t = $g.ts();
     if ($g.is_str(t)) t = $g.to_int(t);
     var cd = new Date();
-    var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + ' ' + $g.months_short[d.getMonth()];
+    var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + ' ' + 
+    ((arguments.length>1 && arguments[1]) ? $g.months[d.getMonth()] : $g.months_short[d.getMonth()]);
     if (d.getFullYear() != cd.getFullYear()) {
       s += ' '  + d.getFullYear();
     }
@@ -1993,4 +1998,3 @@ if ('undefined'==typeof __) function __(k) { return (undefined!==window.i18n[k])
 // console sugar
 var log = console.log.bind(console);
 var trace = console.trace.bind(console);
-
