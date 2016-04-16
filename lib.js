@@ -1402,7 +1402,7 @@
 
 
   //TODO: synchronous loop (start loading each next resource on load callback) ?
-  $g.load_assets = function (a) {
+  $g.load_assets = function (a, done, donecontext) {
     var r,
       imgdir = ('undefined' == typeof $g.imgpath) ? '/img/' : $g.imgpath,
       snddir = ('undefined' == typeof $g.sndpath) ? '/media/' : $g.sndpath;
@@ -1436,7 +1436,9 @@
         if ($g._load_vis && $g.id($g._load_el)) {
           $g.id($g._load_el).style.display = 'none';
         }
-        if ('function' == typeof $g.on_load_assets) $g.on_load_assets.call(null);
+		var c = donecontext || this;
+        if ('function' == typeof done) done.call(c);
+		else if ('function' == typeof $g.on_load_assets) $g.on_load_assets.call(c);
       }
     }, 100);
     if ($g.is_arr(a)) {
