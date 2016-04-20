@@ -1993,7 +1993,8 @@ window.AudioContext =
   window.msAudioContext || null;
 
 // localization back compat
-if ('undefined'==typeof __) function __(k) { return (undefined!==window.i18n[k]) ? window.i18n[k] : k };
+if ('undefined'==typeof __) var __ = function (k) {
+  return ('object'==typeof window.i18n && 'undefined'!=typeof window.i18n[k]) ? window.i18n[k] : k };
 
 // console sugar
 var log = console.log.bind(console);
