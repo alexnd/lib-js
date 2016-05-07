@@ -1,0 +1,21 @@
+{
+  "name": "lib.js",
+  "version": "0.0.1",
+  "description": "Generic helper functions for web development",
+  "main": "lib-node.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexnd/lib.js.git"
+  },
+  "keywords": [
+    "lib.js"
+  ],
+  "author": "Alexander Melanchenko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alexnd/lib.js/issues"
+  }
+}
