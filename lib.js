@@ -937,7 +937,7 @@ var window = window || global || this;
 
     $.set_xhr_post = function (xhr, type, legacyHdrs) {
       var type = ('undefined'==typeof type) ? 'application/x-www-form-urlencoded' : type;
-      var legacyHdrs= ('undefined'==typeof type) ? false : legacyHdrs;
+      var legacyHdrs = ('undefined'==typeof type) ? false : legacyHdrs;
       xhr.setRequestHeader('Content-type', type);
       if (legacyHdrs) {
         if (arguments.length > 1) xhr.setRequestHeader('Content-length', arguments[1].length);
