@@ -935,10 +935,14 @@ var window = window || global || this;
       xhr.send(fd);
     };
 
-    $.set_xhr_post = function (xhr) {
-      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-      if (arguments.length > 1) xhr.setRequestHeader('Content-length', arguments[1].length);
-      xhr.setRequestHeader('Connection', 'close');
+    $.set_xhr_post = function (xhr, type, legacyHdrs) {
+      var type = ('undefined'==typeof type) ? 'application/x-www-form-urlencoded' : type;
+      var legacyHdrs= ('undefined'==typeof type) ? false : legacyHdrs;
+      xhr.setRequestHeader('Content-type', type);
+      if (legacyHdrs) {
+        if (arguments.length > 1) xhr.setRequestHeader('Content-length', arguments[1].length);
+        xhr.setRequestHeader('Connection', 'close');
+      }
     };
 
     $.set_headers = function (xhr, hdrs) {

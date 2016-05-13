@@ -65,30 +65,31 @@ if ('object' == typeof module && null !== module) module.exports = function (app
     },
 
     is_email: function (v) {
-      return (this.is_str(v) && v.match(/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i));
+      return !!(this.is_str(v) && v.match(/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i));
     },
 
-    is_apikey: function(v) {
+    is_apikey: function (v) {
       //TODO: match 363d8522-ef01-fb7f-c6c2-63a19e6c16b3 (must be named is_uuid())
-      return (this.is_str(v) && v.match(/^[a-zA-Z0-9\-]{3,}$/));
+      return !!(this.is_str(v) && v.match(/^[a-zA-Z0-9\-]{3,}$/));
     },
 
-    is_username: function(v) {
-      return (this.is_str(v) && v.match(/^[a-zA-Z0-9_]{4,}$/));
+    is_username: function (v, len) {
+      var len = ('undefined'==typeof len) ? 4 : len, p = new RegExp('^[a-zA-Z0-9_]{'+len+',}$');
+      return !!(this.is_str(v) && v.match(p));
     },
 
-    is_phone: function(v) {
+    is_phone: function (v) {
       //return (this.is_str(v) && v.match(/^[\s()+-]*([0-9][\s()+-]*){6,20}$/));
 	  //TODO: temporary better one
-	  return (this.is_str(v) && v.match(/^\+\d{1,}[0-9 \-]{8,26}$/));
+	  return !!(this.is_str(v) && v.match(/^\+\d{1,}[0-9 \-]{8,26}$/));
     },
 
-    is_password: function(v) {
-      return ((this.is_str(v) && v.length) ? true : false);
+    is_password: function (v) {
+      return !!((this.is_str(v) && v.length) ? true : false);
     },
 
-    is_url: function(v) {
-      return (this.is_str(v) && v.match(/^https?\:\/\/\w+/));
+    is_url: function (v) {
+      return !!(this.is_str(v) && v.match(/^https?\:\/\/\w+/));
     },
 
     is_lat: function (v) {
@@ -101,7 +102,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
 	
     to_int: function (s) {
       var n = parseInt(s, 10);
-      return n == null || isNaN(n) ? 0 : n;
+      return n === null || isNaN(n) ? 0 : n;
     },
 
     to_float: function (v) {
@@ -206,9 +207,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
 
     // Return a unique identifier with the given length
     uid: function (len) {
-      var buf = []
-        , chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        , charlen = chars.length;
+      var buf = [], chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', charlen = chars.length;
       for (var i = 0; i < len; ++i) {
         buf.push(chars[this.rnd_i(0, charlen - 1)]);
       }

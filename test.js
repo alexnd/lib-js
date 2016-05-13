@@ -21,4 +21,6 @@ console.log( lib.to_numstr(0.1) );
 console.log( lib.to_numstr(-0.1) );
 console.log( lib.to_numstr('') );*/
 
-console.log( lib.serialize({foo:'Batman', joe:-0.5}) );
+//console.log( lib.serialize({foo:'Batman', joe:-0.5}) );
+
+console.log( lib.is_username('Bat', 3) );
