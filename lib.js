@@ -634,11 +634,9 @@ var window = window || global || this;
           for (j in classNamesStates) {
             s = 0;
             for (i = 0; i < classArr.length; i++) {
-              //console.log('classArr['+i+']='+classArr[i], j+'='+classNamesStates[j]);
               if (!classNamesStates[j]) {
                 s = 1;
                 if (classArr[i] == j) {
-                  //console.log('deleting class', j);
                   classArr.splice(i, 1);
                 }
                 break;
@@ -729,7 +727,12 @@ var window = window || global || this;
        });
     */
     $.event = function (el, ev, cb, cap) {
-      if (!el) return;
+      var el = ('undefined'==typeof el) ? null : el;
+	  if ($.is_str(el)) el = lib.id(el);
+	  if (!$.is_el(el)) el = lib.qs(el);
+	  if (!$.is_el(el)) return;
+	  if (typeof cb!='function') return;
+      if (!ev) return;
       if (el.addEventListener) {
         el.addEventListener(ev, cb, ((undefined === cap) ? false : cap));
       }
@@ -1240,12 +1243,24 @@ var window = window || global || this;
       return path;
     };
 
-    $.uid = function () {
+	// Return a universally unique identifier in form 550e8400-e29b-41d4-a716-446655440000
+    $.uuid = function () {
       var s = function () {
         return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
       };
       return (s() + s() + '-' + s() + '-' + s() + '-' + s() + '-' + s() + s() + s());
     };
+
+    // Return a unique identifier with the given length
+    $.uid = function (len) {
+      var buf = [], chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', charlen = chars.length,
+	  len = (('undefined'==typeof len) ? 32 : len);
+      for (var i = 0; i < len; ++i) {
+        buf.push(chars[this.rnd_i(0, charlen - 1)]);
+      }
+      return buf.join('');
+    };
+	
 
     $.is_email = function(v) {
       if (undefined === v) return false;

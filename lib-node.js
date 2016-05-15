@@ -190,7 +190,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
     },
 
-    rnd_circ : function () {
+    rnd_circ: function () {
       var t = 2 * Math.PI * Math.random();
       var u = Math.random() + Math.random();
       var r = (u>1) ? 2-u : u;
@@ -207,7 +207,8 @@ if ('object' == typeof module && null !== module) module.exports = function (app
 
     // Return a unique identifier with the given length
     uid: function (len) {
-      var buf = [], chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', charlen = chars.length;
+      var buf = [], chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', charlen = chars.length,
+	  len = ('undefined'==typeof len) ? 32 : len;
       for (var i = 0; i < len; ++i) {
         buf.push(chars[this.rnd_i(0, charlen - 1)]);
       }
@@ -215,7 +216,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
     },
 
     // make url-encoded representation of object to use as http requests data
-    serialize : function(obj, prefix) {
+    serialize: function(obj, prefix) {
       var str = [];
       for (var p in obj) {
         if (obj.hasOwnProperty(p)) {
@@ -227,7 +228,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return str.join('&');
     },
 	
-    unserialize : function (s) {
+    unserialize: function (s) {
       return s.split('&').reduce(function (a, p) {
         var ps = p.split('=').map(function (v) {
           return decodeURIComponent(v.replace('+', ' '));
