@@ -8,7 +8,8 @@
 if ('object' == typeof module && null !== module) module.exports = function (app) {
   var lib = {
 
-    months: ['Янв', 'Фев', 'Мар', 'Апр', 'Мая', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ной', 'Дек'],
+	months: ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
+    months_short: ['Янв','Фев','Мар','Апр','Мая','Июн','Июл','Авг','Сен','Окт','Ной','Дек'],
 
     inject: function (dest, src) {
       if ('object' == typeof dest && 'object' == typeof src) for (var p in src) {
@@ -423,7 +424,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + '.' +
         ((hmonth) ?
           lib.months[d.getMonth()] :
-          ((d.getMonth() + 1 < 10) ? ('0' + (d.getMonth() + 1)) : (d.getMonth() + 1))) + '.' +
+          ((d.getMonth() < 10) ? ('0' + (d.getMonth() + 1)) : (d.getMonth() + 1))) + '.' +
         d.getFullYear() + '/' +
         ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' +
         ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes()) + ':' +
@@ -431,6 +432,25 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return s;
     },
 
+	// human date format: lib.drf(ts = Date.now(), mon_format = undefined, cut_year = undefined)
+	dtf: function (t) {
+      if ('undefined' == typeof t) var t = lib.ts();
+      if (lib.is_str(t)) t = lib.to_int(t);
+	  if (null===t) t = lib.ts();
+	  var sp = (arguments.length>3) ? arguments[3] : ' ';
+      var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + sp +
+        ((arguments.length>1 && arguments[1]==2) ? 
+		(d.getMonth()<10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1 ) 
+		: ( arguments.length>1 && arguments[1] ? lib.months[d.getMonth()] : lib.months_short[d.getMonth()]));
+      if (arguments.length>2 && arguments[2]) {
+		var cd = new Date();
+        if(d.getFullYear() != cd.getFullYear()) s += sp + d.getFullYear();
+      } else {
+		s += sp + d.getFullYear(); 
+	  }
+      return s;
+    },
+	
     // convert date string 'DD.MM.YYYY' to unix timestamp (seconds since 1970)
     dt_to_ts: function (s) {
       var p = s.match(/^(\d+)\.(\d+)\.(\d+)/), d = new Date();

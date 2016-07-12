@@ -1024,15 +1024,23 @@ var window = window || global || this;
         + ':' + ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
       return s;
     };
+	
+	// human date format: lib.drf(ts = Date.now(), mon_format = undefined, cut_year = undefined)
     $.dtf = function (t) {
       if ('undefined' == typeof t) var t = $.ts();
       if ($.is_str(t)) t = $.to_int(t);
-      var cd = new Date();
-      var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + ' ' +
-        ((arguments.length>1 && arguments[1]) ? $.months[d.getMonth()] : $.months_short[d.getMonth()]);
-      if (d.getFullYear() != cd.getFullYear()) {
-        s += ' '  + d.getFullYear();
-      }
+	  if (null===t) t = $.ts();
+	  var sp = (arguments.length>3) ? arguments[3] : ' ';
+      var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + sp +
+        ((arguments.length>1 && arguments[1]==2) ? 
+		(d.getMonth()<10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1 ) 
+		: ( arguments.length>1 && arguments[1] ? $.months[d.getMonth()] : $.months_short[d.getMonth()]));
+      if (arguments.length>2 && arguments[2]) {
+		var cd = new Date();
+        if(d.getFullYear() != cd.getFullYear()) s += sp + d.getFullYear();
+      } else {
+		s += sp + d.getFullYear(); 
+	  }
       return s;
     };
 

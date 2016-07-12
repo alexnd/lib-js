@@ -23,4 +23,8 @@ console.log( lib.to_numstr('') );*/
 
 //console.log( lib.serialize({foo:'Batman', joe:-0.5}) );
 
-console.log( lib.is_username('Bat', 3) );
+//console.log( lib.is_username('Bat', 3) );
+
+console.log( lib.dtf() );
+console.log( lib.dtf(null, 1) );
+console.log( lib.dtf(null, 2, 0, '.') );
