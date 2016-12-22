@@ -547,11 +547,17 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return doc;
     },
 
-    fix_aws_post_json : function(req, res, next) {
+    fix_aws_post_json: function(req, res, next) {
       if (req.headers['x-amz-sns-message-type']) {
         req.headers['content-type'] = 'application/json;charset=UTF-8';
       }
       next();
+    },
+	
+    fix_strip_json_comments: function (v) {
+      return v.replace(/([^,]*),\s*}/gm, function (m, p) {
+        return p + '}';
+      });
     }
   };
   return lib;
