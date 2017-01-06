@@ -25,10 +25,12 @@ console.log( lib.to_numstr('') );*/
 
 //console.log( lib.is_username('Bat', 3) );
 
-console.log( lib.is_empty() );
+/*console.log( lib.is_empty() );
 console.log( lib.is_empty(null) );
 console.log( lib.is_empty([]) );
 console.log( lib.is_empty({}) );
 console.log( lib.is_empty('') );
 console.log( lib.is_empty('0') );
-console.log( lib.is_empty(0) );
+console.log( lib.is_empty(0) );*/
+
+console.log( lib.t() );

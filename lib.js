@@ -485,6 +485,10 @@ var window = window || global || this;
     $.ts = function () {
       return Date.now();
     };
+	
+	$.t = function () {
+      return Math.floor(Date.now() / 1000);
+	};
 
     $.tsof = function (x) {
       return $.ts() + x;

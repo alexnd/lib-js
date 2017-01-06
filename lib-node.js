@@ -415,7 +415,9 @@ if ('object' == typeof module && null !== module) module.exports = function (app
     ts: function () {
       return Date.now();
     },
-
+	t: function () {
+      return Math.floor(Date.now() / 1000);
+	},
     dtformat0: function (t) {
       if (undefined === t) var t = Date.now();
       var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + '.' + (d.getMonth() + 1) + '.' + d.getFullYear() + '/' +
