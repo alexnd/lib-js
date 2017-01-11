@@ -102,6 +102,18 @@
         $(this).val(($(this).get(0).checked) ? 1 : 0);
       });
     });
-  }
+  };
+
+  $.fn.urlify = function(o) {
+    var o = (typeof o == 'object' && o !== null) ? o : {};
+    return this.each (function(i, el) {
+      var s = $(el).html();
+      if (s) {
+        s = s.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig,
+            '<a href="$1"' + ((o.blank) ? ' target="blank"' : '') + '>$1</a>')
+        $(el).html(s);
+      }
+    });
+  };
 
 }( jQuery ));
