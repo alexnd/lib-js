@@ -456,7 +456,7 @@ var window = window || global || this;
       return s.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g, '').replace(/\s+/g, ' ');
     };
 
-    $.capitalise = function (s) {
+    $.capitalize = function (s) {
       return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
     };
 
