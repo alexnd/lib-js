@@ -33,4 +33,6 @@ console.log( lib.is_empty('') );
 console.log( lib.is_empty('0') );
 console.log( lib.is_empty(0) );*/
 
-console.log( lib.t() );
+//console.log( lib.t() );
+
+console.log(lib.sqldate_to_ts());

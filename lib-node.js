@@ -443,6 +443,8 @@ if ('object' == typeof module && null !== module) module.exports = function (app
 
     // convert date string 'DD.MM.YYYY' to unix timestamp (seconds since 1970)
     dt_to_ts: function (s) {
+      if (s === undefined) return 0;
+      var s = '' + s;
       var p = s.match(/^(\d+)\.(\d+)\.(\d+)/), d = new Date();
       if (p) {
         d.setFullYear(p[3]);
@@ -459,6 +461,8 @@ if ('object' == typeof module && null !== module) module.exports = function (app
 
     // convert date string 'YYYY-MM-DD hh:mm:ss' to unix timestamp (seconds since 1970)
     sqldate_to_ts: function (s) {
+      if (s === undefined) return 0;
+      var s = '' + s;
       var p = s.match(/^(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$/), d = new Date();
       if (!p) p = s.match(/^(\d+)-(\d+)-(\d+)$/);
       if (p) {
