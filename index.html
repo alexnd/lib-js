@@ -8,11 +8,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--link rel="stylesheet" href="main.css">-->
     <script src="lib.js"></script>
+    <style>
+        .active {
+            font-weight: bold;
+            color: red;
+        }
+    </style>
 </head>
 <body>
 
 <div id="root">
     <!-- App goes here -->
+    <div id="panel">
+        <span>1111</span>
+        <span class="active">2222</span>
+        <span>3333</span>
+        <span class="active">4444</span>
+    </div>
+
 </div>
 <div id="init" data-init=""></div>
 
@@ -32,7 +45,21 @@ onload = function () {
     a.className = '';
 
     a = lib.inflate_view(lib.id('root'), [
-        {tag:'CANVAS', atr:{width:w, height:h, style:'background:#000'}}
+        {tag:'CANVAS', atr:{width:w, height:h, style:'background:#000'}},
+        {
+            tag:'DIV', ch: [
+            {el:lib.id('panel')},
+            {tag:'BUTTON', txt:'TEST', evn: {
+                click: function (e) {
+                    L(e);
+                    lib.qsa('.active').forEach(function(el) {
+                        lib.set_class(el, 'active', false);
+                    });
+                }
+            }}
+        ]
+        }
+
     ]);
     ctx = lib.d2c(a[0]);
     ctx.font = size + "px arial";
@@ -61,6 +88,8 @@ function update() {
     requestAnimationFrame(update);
 }
 </script>
+
+
 
 </body>
 </html>

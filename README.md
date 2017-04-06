@@ -26,7 +26,7 @@ lib.ts_to_sqldate()
 Query dom elements by selector
 ```
 lib.qsa('.active').forEach(function(el) {
- L('#el', el)
+  lib.set_class(el, 'active', false);
 });
 ```
 
@@ -36,3 +36,5 @@ var els = lib.id('root').inflate_view([
 {tag:'CANVAS', atr:{width:100,height:100,style:'background:#000'}}
 ]);
 ```
+
+Also **index.html** - a real minimal html5 boilerplate
