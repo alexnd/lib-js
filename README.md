@@ -1,7 +1,7 @@
 # lib.js
 Javascript library with generic functions set for web-based apps development
 
-###Installation
+## Installation
 ```
 npm i lib-js
 ```
@@ -11,7 +11,7 @@ Include lib.js into your webpage / singlepage app
 <script src="lib.js"></script>
 ```
 
-###Examples
+## Examples
 
 Generate UUID-like string
 ```
