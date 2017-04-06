@@ -1,4 +1,4 @@
-# lib.js
+# lib-js
 Javascript library with generic functions set for web-based apps development
 
 ## Installation
@@ -32,9 +32,9 @@ lib.qsa('.active').forEach(function(el) {
 
 Render JSON-formatted view into DOM
 ```
-var els = lib.id('root').inflate_view([ 
+var els = lib.inflate_view(lib.id('root'), [ 
 {tag:'CANVAS', atr:{width:100,height:100,style:'background:#000'}}
 ]);
 ```
 
-Also **index.html** - a real minimal html5 boilerplate
+Also [**index.html**](index.html) - a real minimal html5 boilerplate
