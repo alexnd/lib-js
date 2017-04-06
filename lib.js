@@ -1,6 +1,6 @@
 /*
  * HTML5 application library
- * Copyright (c) 2012-2016 Alexander Melanchenko
+ * Copyright (c) 2012-2017 Alexander Melanchenko
  * http://alexnd.com
  * Released under the MIT License
  */

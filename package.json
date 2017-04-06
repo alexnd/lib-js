@@ -1,6 +1,6 @@
 {
-  "name": "lib.js",
-  "version": "0.0.2",
+  "name": "lib-js",
+  "version": "0.0.3",
   "description": "Generic helper functions for web development",
   "main": "lib-node.js",
   "scripts": {
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexnd/lib.js.git"
+    "url": "https://github.com/alexnd/lib-js.git"
   },
   "keywords": [
-    "lib.js"
+    "lib js lib.js lib-js javascript html5"
   ],
   "author": "Alexander Melanchenko",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/alexnd/lib.js/issues"
+    "url": "https://github.com/alexnd/lib-js/issues"
   }
 }

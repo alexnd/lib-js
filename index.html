@@ -1,0 +1,66 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>html5 app</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--link rel="stylesheet" href="main.css">-->
+    <script src="lib.js"></script>
+</head>
+<body>
+
+<div id="root">
+    <!-- App goes here -->
+</div>
+<div id="init" data-init=""></div>
+
+<script>
+var L = (typeof L == 'undefined') ? console.log.bind(console) : L;
+var ctx;
+var w = 320;
+var h = 200;
+var size = 14;
+var txt;
+var txtX = 10;
+var txtY = h / 2 - size / 2;
+var txtW = 19 * (size/2);
+
+onload = function () {
+    var a = lib.qs('.no-js');
+    a.className = '';
+
+    a = lib.inflate_view(lib.id('root'), [
+        {tag:'CANVAS', atr:{width:w, height:h, style:'background:#000'}}
+    ]);
+    ctx = lib.d2c(a[0]);
+    ctx.font = size + "px arial";
+
+    resize();
+    update();
+};
+
+resize = function () {
+    lib._resize();
+    L(`${lib.ww}x${lib.wh}`);
+};
+
+function update() {
+    if(txt) {
+        ctx.beginPath();
+        ctx.fillStyle = "gray";
+        ctx.rect(txtX-2, txtY-size, txtW+2, size+2);
+        ctx.fill();
+    }
+    ctx.beginPath();
+    txt = lib.ts_to_sqldate();
+    ctx.fillStyle = "white";
+    ctx.fillText(txt, txtX, txtY);
+    ctx.fill();
+    requestAnimationFrame(update);
+}
+</script>
+
+</body>
+</html>
