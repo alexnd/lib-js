@@ -1,6 +1,6 @@
 {
   "name": "lib-js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Generic helper functions for web development",
   "main": "lib-node.js",
   "scripts": {
