@@ -5,7 +5,7 @@
  * Released under the MIT License
  */
 
-var window = window || global || this;
+var window = window || self || global || this;
 
 (function ($window, $lib) {
 
