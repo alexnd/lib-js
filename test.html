@@ -1,0 +1,29 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>lib.js tests</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="lib.js"></script>
+    <style></style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script>
+    var L = (typeof L == 'undefined') ? console.log.bind(console) : L;
+    onload = function () {
+        // base64
+        var string = 'Hello World!';
+        var encodedString = lib.base64.encode(string);
+        L(encodedString); // Outputs: "SGVsbG8gV29ybGQh"
+        var decodedString = lib.base64.decode(encodedString);
+        L(decodedString); // Outputs: "Hello World!"
+    };
+</script>
+
+</body>
+</html>
