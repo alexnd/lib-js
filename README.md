@@ -46,7 +46,7 @@ Bind event listener
 ```
 lib.event(document, 'mousemove', function(e) {
     L(e.pageX); // Your mouse X position
-    //return e.prevent(); // You can prevent bubbling in thit way
+    //return lib.prevent(e); // You can prevent bubbling in thit way
 });
 ```
 
