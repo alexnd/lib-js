@@ -42,4 +42,17 @@ var els = lib.inflate_view(lib.id('root'), [
 ]);
 ```
 
+Bind event listener
+```
+lib.event(document, 'mousemove', function(e) {
+    L(e.pageX); // Your mouse X position
+    //return e.prevent(); // You can prevent bubbling in thit way
+});
+```
+
+Unbind event listener
+```
+lib.unevent(document, 'mousemove');
+```
+
 Also [**index.html**](index.html) - a real minimal html5 boilerplate

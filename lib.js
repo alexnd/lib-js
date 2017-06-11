@@ -777,11 +777,12 @@ var window = window || self || global || this;
     };
 
     $.prevent = function (ev) {
-      if (!ev) return;
+      if (!ev) return false;
       ev.cancelBubble = true;
       ev.returnValue = false;
       if (ev.stopPropagation) ev.stopPropagation();
       if (ev.preventDefault) ev.preventDefault();
+      return false;
     };
 
     $.eventTarget = function (e) {
