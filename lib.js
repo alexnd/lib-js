@@ -440,10 +440,18 @@ var window = window || self || global || this;
       }
     };
 
-    // converts numeric degrees to radians
+    // convert numeric degrees to radians
     $.toRad = function (a) {
       if (!isNaN(a)) {
         return parseFloat(a) * Math.PI / 180;
+      }
+      return 0;
+    };
+
+    // convert numeric degrees to radians
+    $.toDeg = function (a) {
+      if (!isNaN(a)) {
+        return parseFloat(a) * 180 / Math.PI;
       }
       return 0;
     };
@@ -2096,6 +2104,12 @@ var window = window || self || global || this;
           if (e.coords) fn({lat: e.coords.latitude, lng: e.coords.longitude});
         });
       }
+    };
+
+    $.geo_angle = function (lat1, lng1, lat2, lng2) {
+      var dy = lat2 - lat1;
+      var dx = Math.cos(Math.PI / 180 * lat1) * (lng2 - lng1);
+      return Math.atan2(dy, dx);
     };
 
 // css anim

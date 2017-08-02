@@ -167,6 +167,14 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       return 0;
     },
 
+    // Convert numeric radians to degrees
+    to_deg: function (a) {
+      if (!isNaN(a)) {
+        return parseFloat(a) * 180 / Math.PI;
+      }
+      return 0;
+    },
+
     // Return real var type string representation
     to_type: function (obj) {
       return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
@@ -246,7 +254,7 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       }, {});
     },
 
-    // Return a distance between 2 points
+    // Distance between 2 points
     dist: function (x1, y1, x2, y2) {
       if (!isNaN(x1) || !isNaN(x2) || !isNaN(y1) || !isNaN(y2)) return 0;
       return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
@@ -262,6 +270,13 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       var d = $g.rEarth * c;
       return d;
+    },
+
+    // Angle between 2 geo points in radians
+    angle_latlng: function (lat1, lng1, lat2, lng2) {
+        var dy = lat2 - lat1;
+        var dx = Math.cos(Math.PI / 180 * lat1) * (lng2 - lng1);
+        return Math.atan2(dy, dx);
     },
 
     /* return bounding rectangle of path
