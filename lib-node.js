@@ -433,6 +433,8 @@ if ('object' == typeof module && null !== module) module.exports = function (app
 	t: function () {
       return Math.floor(Date.now() / 1000);
 	},
+
+    //TODO: remove
     dtformat0: function (t) {
       if (undefined === t) var t = Date.now();
       var d = new Date(t), s = ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate()) + '.' + (d.getMonth() + 1) + '.' + d.getFullYear() + '/' +
@@ -509,6 +511,17 @@ if ('object' == typeof module && null !== module) module.exports = function (app
       ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours()) + ':' +
       ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes()) + ':' + 
       ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
+    },
+
+    date_to_iso : function (d) {
+      var d = d || Date.now();
+      if (!(d instanceof Date)) d = new Date(d);
+      return (d.getFullYear()
+        + '-' + ((d.getMonth() < 9) ? ('0' + (d.getMonth()+1)) : (d.getMonth()+1))
+        + '-' + ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate())
+        + ' ' + ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours())
+        + ':' + ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes())
+        + ':' + ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds()))
     },
 
     leapYear : function(y) {

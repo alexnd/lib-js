@@ -1137,6 +1137,17 @@ var window = window || self || global || this;
         ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds());
     };
 
+    $.date_to_iso = function (d) {
+      var d = d || Date.now();
+      if (!(d instanceof Date)) d = new Date(d);
+      return (d.getFullYear()
+        + '-' + ((d.getMonth() < 9) ? ('0' + (d.getMonth()+1)) : (d.getMonth()+1))
+        + '-' + ((d.getDate() < 10) ? ('0' + d.getDate()) : d.getDate())
+        + ' ' + ((d.getHours() < 10) ? ('0' + d.getHours()) : d.getHours())
+        + ':' + ((d.getMinutes() < 10) ? ('0' + d.getMinutes()) : d.getMinutes())
+        + ':' + ((d.getSeconds() < 10) ? ('0' + d.getSeconds()) : d.getSeconds()))
+    };
+
     $.leapYear = function(y) {
       return ((y % 4 == 0) && (y % 100 != 0)) || (y % 400 == 0);
     };
