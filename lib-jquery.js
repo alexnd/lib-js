@@ -96,6 +96,8 @@
     });
   };
 
+
+
   $.fn.onchangeval = function() {
     return this.each (function(i, el) {
       $(el).change(function () {
@@ -115,5 +117,26 @@
       }
     });
   };
+
+  $.fn.getForm = function(el) {
+    var r = {};
+    el.find('input[name],select[name]').each(function (i, e) {
+      if (e.type === 'radio') {
+        if (e.checked) {
+          r[e.name] = e.value;
+        }
+      } else if (e.type === 'checkbox') {
+        if (!r[e.name]) {
+          r[e.name] = [];
+        }
+        if (e.checked) {
+          r[e.name].push(e.value);
+        }
+      } else {
+        r[e.name] = e.value;
+      }
+    });
+    return r;
+  }
 
 }( jQuery ));
